@@ -1,7 +1,7 @@
-package info.bitrich.xchangestream.kraken.dto.futures;
+package info.bitrich.xchangestream.kraken.futures.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import info.bitrich.xchangestream.kraken.dto.enums.KrakenEventType;
+import info.bitrich.xchangestream.kraken.futures.enums.KrakenFuturesEventType;
 
 import java.beans.ConstructorProperties;
 
@@ -11,16 +11,16 @@ import java.beans.ConstructorProperties;
 public class KrakenFuturesEventMessage {
 
     @JsonProperty(value = "event", required = true)
-    private final KrakenEventType event;
+    private final KrakenFuturesEventType event;
 
     private String message;
 
     @ConstructorProperties("event")
-    public KrakenFuturesEventMessage(KrakenEventType event) {
+    public KrakenFuturesEventMessage(KrakenFuturesEventType event) {
         this.event = event;
     }
 
-    public KrakenEventType getEvent() {
+    public KrakenFuturesEventType getEvent() {
         return event;
     }
 

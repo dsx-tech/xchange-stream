@@ -1,8 +1,8 @@
-package info.bitrich.xchangestream.kraken.dto.futures;
+package info.bitrich.xchangestream.kraken.futures.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import info.bitrich.xchangestream.kraken.dto.enums.KrakenEventType;
-import info.bitrich.xchangestream.kraken.dto.enums.futures.KrakenFuturesFeed;
+import info.bitrich.xchangestream.kraken.futures.enums.KrakenFuturesEventType;
+import info.bitrich.xchangestream.kraken.futures.enums.KrakenFuturesFeed;
 
 import java.beans.ConstructorProperties;
 
@@ -15,7 +15,7 @@ public class KrakenFuturesFeedMessage extends KrakenFuturesEventMessage {
     private final KrakenFuturesFeed feed;
 
     @ConstructorProperties({"event", "feed"})
-    public KrakenFuturesFeedMessage(KrakenEventType event, KrakenFuturesFeed feed) {
+    public KrakenFuturesFeedMessage(KrakenFuturesEventType event, KrakenFuturesFeed feed) {
         super(event);
         this.feed = feed;
     }

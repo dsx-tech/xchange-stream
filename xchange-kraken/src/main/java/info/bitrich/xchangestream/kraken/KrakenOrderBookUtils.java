@@ -59,7 +59,7 @@ public class KrakenOrderBookUtils {
                 asksValues = orderBookItemsMap.get(ASK_UPDATE);
                 bidsValues = orderBookItemsMap.get(BID_UPDATE);
             }
-            return new KrakenOrderBook(channelID, channelName, pair, orderBookType, getItemsArray(asksValues), getItemsArray(bidsValues));
+            return new KrakenOrderBook(orderBookType, getItemsArray(asksValues), getItemsArray(bidsValues));
 
         } catch (KrakenException e) {
             LOG.error("failed to parse order book tree {}", e.getMessage());

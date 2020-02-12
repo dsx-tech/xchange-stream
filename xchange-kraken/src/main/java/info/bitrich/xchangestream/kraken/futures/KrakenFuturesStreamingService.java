@@ -3,48 +3,39 @@ package info.bitrich.xchangestream.kraken.futures;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import info.bitrich.xchangestream.kraken.KrakenStreamingMarketDataService;
-import info.bitrich.xchangestream.kraken.dto.KrakenSubscriptionConfig;
-import info.bitrich.xchangestream.kraken.dto.KrakenSubscriptionMessage;
-import info.bitrich.xchangestream.kraken.dto.KrakenSubscriptionStatusMessage;
-import info.bitrich.xchangestream.kraken.dto.KrakenSystemStatus;
-import info.bitrich.xchangestream.kraken.dto.enums.KrakenEventType;
-import info.bitrich.xchangestream.kraken.dto.enums.KrakenSubscriptionName;
+import info.bitrich.xchangestream.kraken.futures.dto.KrakenFuturesErrorMessage;
+import info.bitrich.xchangestream.kraken.futures.dto.KrakenFuturesProductMessage;
+import info.bitrich.xchangestream.kraken.futures.enums.KrakenFuturesEventType;
+import info.bitrich.xchangestream.kraken.futures.enums.KrakenFuturesFeed;
 import info.bitrich.xchangestream.service.netty.JsonNettyStreamingService;
 import info.bitrich.xchangestream.service.netty.StreamingObjectMapperHelper;
-import info.bitrich.xchangestream.service.netty.WebSocketClientHandler;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.http.websocketx.WebSocketClientHandshaker;
-import io.reactivex.Completable;
-import io.reactivex.Observable;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Collections;
-import java.util.Map;
-import java.util.UUID;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
 
-import static info.bitrich.xchangestream.kraken.dto.enums.KrakenEventType.subscribe;
+import static info.bitrich.xchangestream.kraken.KrakenConstants.KRAKEN_CHANNEL_DELIMITER;
+import static info.bitrich.xchangestream.kraken.KrakenConstants.KRAKEN_FUTURES_PRODUCT_ID;
+import static info.bitrich.xchangestream.kraken.futures.enums.KrakenFuturesFeed.getFeed;
 
 /**
  * @author makarid, pchertalev
  */
 public class KrakenFuturesStreamingService extends JsonNettyStreamingService {
     private static final Logger LOG = LoggerFactory.getLogger(KrakenFuturesStreamingService.class);
+
     private static final String EVENT = "event";
-    private final Map<Integer, String> channels = new ConcurrentHashMap<>();
+
     private ObjectMapper mapper = StreamingObjectMapperHelper.getObjectMapper();
-    private final boolean isPrivate;
 
-    private final Map<Integer, String> subscriptionRequestMap = new ConcurrentHashMap<>();
+    private final Set<String> subscriptionRequestMap = ConcurrentHashMap.newKeySet();
 
-    public KrakenFuturesStreamingService(boolean isPrivate, String uri) {
+    public KrakenFuturesStreamingService(String uri) {
         super(uri, Integer.MAX_VALUE);
-        this.isPrivate = isPrivate;
     }
 
 
@@ -55,176 +46,98 @@ public class KrakenFuturesStreamingService extends JsonNettyStreamingService {
 
     @Override
     protected void handleMessage(JsonNode message) {
-        String channelName = getChannel(message);
-
         try {
             JsonNode event = message.get(EVENT);
-            KrakenEventType krakenEvent;
-            if (event != null && (krakenEvent = KrakenEventType.getEvent(event.textValue())) != null) {
+            KrakenFuturesEventType krakenEvent;
+            if (event != null && (krakenEvent = KrakenFuturesEventType.getEvent(event.textValue())) != null) {
                 switch (krakenEvent) {
-                    case heartbeat:
-                        LOG.debug("Heartbeat received");
-                        break;
-                    case systemStatus:
-                        KrakenSystemStatus systemStatus = mapper.treeToValue(message, KrakenSystemStatus.class);
-                        LOG.info("System status: {}", systemStatus);
-                        break;
-                    case subscriptionStatus:
-                        KrakenSubscriptionStatusMessage statusMessage = mapper.treeToValue(message, KrakenSubscriptionStatusMessage.class);
-                        Integer reqid = statusMessage.getReqid();
-                        if (!isPrivate && reqid != null)
-                            channelName = subscriptionRequestMap.remove(reqid);
-
-                        switch (statusMessage.getStatus()) {
-                            case subscribed:
-                                LOG.info("Channel {} has been subscribed", channelName);
-
-                                if (statusMessage.getChannelID() != null)
-                                    channels.put(statusMessage.getChannelID(), channelName);
-
-                                break;
-                            case unsubscribed:
-                                LOG.info("Channel {} has been unsubscribed", channelName);
-                                channels.remove(statusMessage.getChannelID());
-                                break;
-                            case error:
-                                LOG.error("Channel {} has been failed: {}", channelName, statusMessage.getErrorMessage());
-                        }
-                        break;
+                    case error:
+                        KrakenFuturesErrorMessage errorMessage = mapper.treeToValue(message, KrakenFuturesErrorMessage.class);
+                        LOG.error("Kraken Future error: {}", errorMessage.getMessage());
+                        return;
+                    case subscribed:
+                    case unsubscribed:
+                        KrakenFuturesProductMessage statusMessage = mapper.treeToValue(message, KrakenFuturesProductMessage.class);
+                        statusMessage.getProductIds().forEach(productId -> {
+                            String channelName = statusMessage.getFeed() + KRAKEN_CHANNEL_DELIMITER + productId;
+                            if (subscriptionRequestMap.contains(channelName)) {
+                                LOG.info("{} request has been successfully confirmed for productId {}", krakenEvent.getSourceEvent(), productId);
+                                subscriptionRequestMap.remove(channelName);
+                            } else {
+                                LOG.warn("Unknown {} request has been confirmed for productId {}", krakenEvent.getSourceEvent(), productId);
+                            }
+                        });
+                        return;
+                    case subscribed_failed:
+                    case unsubscribed_failed:
+                        KrakenFuturesProductMessage failedMessage = mapper.treeToValue(message, KrakenFuturesProductMessage.class);
+                        failedMessage.getProductIds().forEach(productId -> {
+                            String channelName = failedMessage.getFeed() + KRAKEN_CHANNEL_DELIMITER + productId;
+                            if (subscriptionRequestMap.contains(channelName)) {
+                                LOG.error("{} request has been rejected for productId {}", krakenEvent.getSourceEvent(), productId);
+                                subscriptionRequestMap.remove(channelName);
+                            } else {
+                                LOG.error("Unknown {} request has been rejected for productId {}", krakenEvent.getSourceEvent(), productId);
+                            }
+                        });
+                        return;
                     default:
-                        LOG.warn("Unexpected event type has been received: {}", krakenEvent);
+                        // do nothing
                 }
-                return;
-
             }
+
+            String channelName = getChannel(message);
+            if (message.isArray() || StringUtils.isBlank(channelName)) {
+                LOG.error("Unknown message: {}", message.toString());
+                return;
+            }
+
         } catch (JsonProcessingException e) {
             LOG.error("Error reading message: {}", e.getMessage(), e);
-        }
-
-        if (!message.isArray() || channelName == null) {
-            LOG.error("Unknown message: {}", message.toString());
-            return;
         }
 
         super.handleMessage(message);
     }
 
     @Override
-    protected String getChannelNameFromMessage(JsonNode message) throws IOException {
-        String channelName = null;
-        if (message.has("channelID")) {
-            channelName = channels.get(message.get("channelID").asInt());
-        }
-        if (message.has("channelName")) {
-            channelName = message.get("channelName").asText();
-        }
-
-        if (message.isArray()) {
-            if (message.get(0).isInt()) {
-                channelName = channels.get(message.get(0).asInt());
-            }
-            if (message.get(1).isTextual()) {
-                channelName = message.get(1).asText();
+    protected String getChannelNameFromMessage(JsonNode message) {
+        StringBuilder channelNameBuilder = new StringBuilder();
+        KrakenFuturesFeed feed = getFeed(message);
+        if (feed != null) {
+            channelNameBuilder.append(feed.sourceFeed);
+            if (message.has(KRAKEN_FUTURES_PRODUCT_ID)) {
+                JsonNode productId = message.get(KRAKEN_FUTURES_PRODUCT_ID);
+                channelNameBuilder
+                        .append(KRAKEN_CHANNEL_DELIMITER)
+                        .append(productId.asText());
             }
         }
-
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("ChannelName {}", StringUtils.isBlank(channelName) ? "not defined" : channelName);
+        String channelName = channelNameBuilder.toString();
+        if (StringUtils.isBlank(channelName)) {
+            LOG.debug("ChannelName not defined");
+            return null;
         }
+        LOG.debug("ChannelName {}", channelName);
         return channelName;
     }
 
     @Override
     public String getSubscribeMessage(String channelName, Object... args) throws IOException {
-        int reqID = Math.abs(UUID.randomUUID().hashCode());
-        String [] channelData = channelName.split(KrakenStreamingMarketDataService.KRAKEN_CHANNEL_DELIMITER);
-        KrakenSubscriptionName subscriptionName = KrakenSubscriptionName.valueOf(channelData[0]);
-
-        if (isPrivate) {
-            String token = (String) args[0];
-
-            KrakenSubscriptionMessage subscriptionMessage = new KrakenSubscriptionMessage(reqID, subscribe,
-                    null, new KrakenSubscriptionConfig(subscriptionName, null, token));
-
-            return objectMapper.writeValueAsString(subscriptionMessage);
-        } else {
-            String pair = channelData[1];
-
-            Integer depth = null;
-            if (args.length > 0 && args[0] != null) {
-                depth = (Integer) args[0];
-            }
-            subscriptionRequestMap.put(reqID, channelName);
-
-            KrakenSubscriptionMessage subscriptionMessage = new KrakenSubscriptionMessage(reqID, subscribe,
-                    Collections.singletonList(pair), new KrakenSubscriptionConfig(subscriptionName, depth, null));
-            return objectMapper.writeValueAsString(subscriptionMessage);
-        }
+        return getSubscriptionMessage(channelName, KrakenFuturesEventType.subscribe);
     }
 
     @Override
     public String getUnsubscribeMessage(String channelName) throws IOException {
-        int reqID = Math.abs(UUID.randomUUID().hashCode());
-        String [] channelData = channelName.split(KrakenStreamingMarketDataService.KRAKEN_CHANNEL_DELIMITER);
-        KrakenSubscriptionName subscriptionName = KrakenSubscriptionName.valueOf(channelData[0]);
-
-        if (isPrivate) {
-            KrakenSubscriptionMessage subscriptionMessage = new KrakenSubscriptionMessage(reqID, KrakenEventType.unsubscribe,
-                    null, new KrakenSubscriptionConfig(subscriptionName, null, null));
-            return objectMapper.writeValueAsString(subscriptionMessage);
-        } else {
-            String pair = channelData[1];
-
-            subscriptionRequestMap.put(reqID, channelName);
-            KrakenSubscriptionMessage subscriptionMessage = new KrakenSubscriptionMessage(reqID, KrakenEventType.unsubscribe,
-                    Collections.singletonList(pair), new KrakenSubscriptionConfig(subscriptionName));
-            return objectMapper.writeValueAsString(subscriptionMessage);
-        }
-    }
-    @Override
-    protected WebSocketClientHandler getWebSocketClientHandler(WebSocketClientHandshaker handshaker,
-                                                               WebSocketClientHandler.WebSocketMessageHandler handler) {
-        LOG.info("Registering KrakenWebSocketClientHandler");
-        return new KrakenWebSocketClientHandler(handshaker, handler);
+        return getSubscriptionMessage(channelName, KrakenFuturesEventType.unsubscribe);
     }
 
-    @Override
-    protected Completable openConnection() {
-
-        KrakenSubscriptionMessage ping = new KrakenSubscriptionMessage(null,KrakenEventType.ping,null,null);
-
-        subscribeConnectionSuccess().subscribe( o ->
-            Observable
-                    .interval(30, TimeUnit.SECONDS)
-                    .takeWhile( t -> isSocketOpen())
-                    .subscribe( t -> sendObjectMessage(ping)));
-
-        return super.openConnection();
+    private String getSubscriptionMessage(String channelName, KrakenFuturesEventType event) throws JsonProcessingException {
+        String[] channelData = channelName.split(KRAKEN_CHANNEL_DELIMITER);
+        KrakenFuturesFeed feed = KrakenFuturesFeed.valueOf(channelData[0]);
+        String productId = channelData[1];
+        subscriptionRequestMap.add(channelName);
+        KrakenFuturesProductMessage subscriptionMessage = new KrakenFuturesProductMessage(event, feed, Collections.singletonList(productId));
+        return objectMapper.writeValueAsString(subscriptionMessage);
     }
 
-    private WebSocketClientHandler.WebSocketMessageHandler channelInactiveHandler = null;
-
-    /**
-     * Custom client handler in order to execute an external, user-provided handler on channel events.
-     * This is useful because it seems Kraken unexpectedly closes the web socket connection.
-     */
-    class KrakenWebSocketClientHandler extends NettyWebSocketClientHandler {
-
-        public KrakenWebSocketClientHandler(WebSocketClientHandshaker handshaker, WebSocketMessageHandler handler) {
-            super(handshaker, handler);
-        }
-
-        @Override
-        public void channelActive(ChannelHandlerContext ctx) {
-            super.channelActive(ctx);
-        }
-
-        @Override
-        public void channelInactive(ChannelHandlerContext ctx) {
-            super.channelInactive(ctx);
-            if (channelInactiveHandler != null) {
-                channelInactiveHandler.onMessage("WebSocket Client disconnected!");
-            }
-        }
-    }
 }

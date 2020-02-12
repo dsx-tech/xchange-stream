@@ -9,33 +9,15 @@ import org.knowm.xchange.kraken.dto.marketdata.KrakenPublicOrder;
  */
 public class KrakenOrderBook {
 
-    private Integer channelID;
-    private String channelName;
-    private String pair;
     private KrakenOrderBookMessageType type;
 
     private KrakenPublicOrder[] ask;
     private KrakenPublicOrder[] bid;
 
-    public KrakenOrderBook(Integer channelID, String channelName, String pair, KrakenOrderBookMessageType type, KrakenPublicOrder[] ask, KrakenPublicOrder[] bid) {
-        this.channelID = channelID;
-        this.channelName = channelName;
-        this.pair = pair;
+    public KrakenOrderBook(KrakenOrderBookMessageType type, KrakenPublicOrder[] ask, KrakenPublicOrder[] bid) {
         this.type = type;
         this.ask = ask;
         this.bid = bid;
-    }
-
-    public Integer getChannelID() {
-        return channelID;
-    }
-
-    public String getChannelName() {
-        return channelName;
-    }
-
-    public String getPair() {
-        return pair;
     }
 
     public KrakenOrderBookMessageType getType() {
@@ -49,7 +31,6 @@ public class KrakenOrderBook {
     public KrakenPublicOrder[] getBid() {
         return bid;
     }
-
 
     public KrakenOrderBookStorage toKrakenOrderBook(KrakenOrderBookStorage orderbook, int depth) {
         if (type == KrakenOrderBookMessageType.UPDATE) {

@@ -4,7 +4,6 @@ import info.bitrich.xchangestream.core.ProductSubscription;
 import info.bitrich.xchangestream.core.StreamingExchange;
 import info.bitrich.xchangestream.core.StreamingMarketDataService;
 import info.bitrich.xchangestream.kraken.KrakenStreamingMarketDataService;
-import info.bitrich.xchangestream.kraken.KrakenStreamingService;
 import io.reactivex.Completable;
 import org.knowm.xchange.ExchangeSpecification;
 import org.knowm.xchange.kraken.KrakenExchange;
@@ -21,17 +20,17 @@ public class KrakenFuturesStreamingExchange extends KrakenExchange implements St
 
     private static final String API_URI = "wss://futures.kraken.com/ws/v1";
 
-    private final KrakenStreamingService streamingService;
-    private KrakenStreamingMarketDataService streamingMarketDataService;
+    private final KrakenFuturesStreamingService streamingService;
+    private KrakenFuturesStreamingMarketDataService streamingMarketDataService;
 
     public KrakenFuturesStreamingExchange() {
-        this.streamingService = new KrakenStreamingService(false, API_URI);
+        this.streamingService = new KrakenFuturesStreamingService(API_URI);
     }
 
     @Override
     protected void initServices() {
         super.initServices();
-        streamingMarketDataService = new KrakenStreamingMarketDataService(streamingService);
+        streamingMarketDataService = new KrakenFuturesStreamingMarketDataService(streamingService);
     }
 
     @Override
