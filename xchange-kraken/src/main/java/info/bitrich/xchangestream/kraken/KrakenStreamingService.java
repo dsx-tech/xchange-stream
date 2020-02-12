@@ -27,6 +27,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
+import static info.bitrich.xchangestream.kraken.KrakenConstants.KRAKEN_CHANNEL_DELIMITER;
 import static info.bitrich.xchangestream.kraken.dto.enums.KrakenEventType.subscribe;
 
 /**
@@ -139,7 +140,7 @@ public class KrakenStreamingService extends JsonNettyStreamingService {
     @Override
     public String getSubscribeMessage(String channelName, Object... args) throws IOException {
         int reqID = Math.abs(UUID.randomUUID().hashCode());
-        String [] channelData = channelName.split(KrakenStreamingMarketDataService.KRAKEN_CHANNEL_DELIMITER);
+        String [] channelData = channelName.split(KRAKEN_CHANNEL_DELIMITER);
         KrakenSubscriptionName subscriptionName = KrakenSubscriptionName.valueOf(channelData[0]);
 
         if (isPrivate) {
@@ -167,7 +168,7 @@ public class KrakenStreamingService extends JsonNettyStreamingService {
     @Override
     public String getUnsubscribeMessage(String channelName) throws IOException {
         int reqID = Math.abs(UUID.randomUUID().hashCode());
-        String [] channelData = channelName.split(KrakenStreamingMarketDataService.KRAKEN_CHANNEL_DELIMITER);
+        String [] channelData = channelName.split(KRAKEN_CHANNEL_DELIMITER);
         KrakenSubscriptionName subscriptionName = KrakenSubscriptionName.valueOf(channelData[0]);
 
         if (isPrivate) {

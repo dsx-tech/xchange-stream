@@ -28,6 +28,8 @@ import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
+import static info.bitrich.xchangestream.kraken.KrakenConstants.KRAKEN_CHANNEL_DELIMITER;
+
 /**
  * @author makarid, pchertalev
  */
@@ -38,8 +40,6 @@ public class KrakenStreamingMarketDataService implements StreamingMarketDataServ
     private static final int ORDER_BOOK_SIZE_DEFAULT = 25;
     private static final int[] KRAKEN_VALID_ORDER_BOOK_SIZES = {10, 25, 100, 500, 1000};
     private static final int MIN_DATA_ARRAY_SIZE = 4;
-
-    public static final String KRAKEN_CHANNEL_DELIMITER = "-";
 
     private final KrakenStreamingService service;
     private final Map<String, KrakenOrderBookStorage> orderBooks = new ConcurrentHashMap<>();

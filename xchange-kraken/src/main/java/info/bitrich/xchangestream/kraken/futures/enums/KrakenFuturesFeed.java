@@ -12,6 +12,7 @@ public enum KrakenFuturesFeed {
     book_snapshot(book),
     ticker,
     trade,
+    trade_snapshot(trade),
     heartbeat;
 
     public final KrakenFuturesFeed sourceFeed;

@@ -3,13 +3,20 @@ package info.bitrich.xchangestream.kraken.futures;
 import info.bitrich.xchangestream.core.StreamingMarketDataService;
 import info.bitrich.xchangestream.kraken.KrakenException;
 import info.bitrich.xchangestream.kraken.KrakenOrderBookStorage;
+import info.bitrich.xchangestream.kraken.dto.KrakenOrderBook;
 import info.bitrich.xchangestream.kraken.futures.dto.KrakenFutureOrderBook;
 import info.bitrich.xchangestream.kraken.futures.dto.KrakenFutureOrderBookUpdate;
+import info.bitrich.xchangestream.kraken.futures.dto.KrakenFutureTicker;
+import info.bitrich.xchangestream.kraken.futures.dto.KrakenFutureTrade;
+import info.bitrich.xchangestream.kraken.futures.dto.KrakenFutureTradeSnapshot;
 import info.bitrich.xchangestream.kraken.futures.enums.KrakenFuturesFeed;
 import info.bitrich.xchangestream.kraken.futures.enums.KrakenFuturesProduct;
+import info.bitrich.xchangestream.kraken.futures.enums.KrakenFuturesSide;
 import info.bitrich.xchangestream.service.netty.StreamingObjectMapperHelper;
 import io.reactivex.Observable;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.knowm.xchange.currency.CurrencyPair;
+import org.knowm.xchange.dto.Order;
 import org.knowm.xchange.dto.marketdata.OrderBook;
 import org.knowm.xchange.dto.marketdata.Ticker;
 import org.knowm.xchange.dto.marketdata.Trade;
@@ -18,8 +25,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.LocalDate;
+import java.util.Comparator;
+import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
+import static info.bitrich.xchangestream.kraken.KrakenConstants.KRAKEN_CHANNEL_DELIMITER;
 
 /**
  * @author makarid, pchertalev
@@ -28,14 +39,10 @@ public class KrakenFuturesStreamingMarketDataService implements StreamingMarketD
 
     private static final Logger LOG = LoggerFactory.getLogger(KrakenFuturesStreamingMarketDataService.class);
 
-    private static final int ORDER_BOOK_SIZE_DEFAULT = 25;
-    private static final int[] KRAKEN_VALID_ORDER_BOOK_SIZES = {10, 25, 100, 500, 1000};
-    private static final int MIN_DATA_ARRAY_SIZE = 4;
-
-    public static final String KRAKEN_CHANNEL_DELIMITER = "-";
-
     private final KrakenFuturesStreamingService service;
     private final Map<String, KrakenOrderBookStorage> orderBooks = new ConcurrentHashMap<>();
+    private volatile long lastTradeSeq = 0;
+    private volatile long lastOrderBookSeq = 0;
 
     public KrakenFuturesStreamingMarketDataService(KrakenFuturesStreamingService service) {
         this.service = service;
@@ -43,6 +50,76 @@ public class KrakenFuturesStreamingMarketDataService implements StreamingMarketD
 
     @Override
     public Observable<OrderBook> getOrderBook(CurrencyPair currencyPair, Object... args) {
+        ImmutablePair<KrakenFuturesProduct, LocalDate> params = validateAndPrepareSubscriptionParams(currencyPair, args);
+        String channelName = getChannelName(KrakenFuturesFeed.book, currencyPair, params.left, params.right);
+        return service.subscribeChannel(channelName, args)
+                .filter(jsonMessage -> KrakenFuturesFeed.book.equalsJsonNode(jsonMessage) || KrakenFuturesFeed.book_snapshot.equalsJsonNode(jsonMessage))
+                .map(jsonMessage -> {
+                    if (KrakenFuturesFeed.book.equalsJsonNode(jsonMessage)) {
+                        KrakenFutureOrderBookUpdate futureOrderBookUpdate = StreamingObjectMapperHelper.getObjectMapper().treeToValue(jsonMessage, KrakenFutureOrderBookUpdate.class);
+                        KrakenOrderBook krakenOrderBook = KrakenFuturesUtils.convertFrom(futureOrderBookUpdate);
+                        return ImmutablePair.of(futureOrderBookUpdate.getSeq(), krakenOrderBook);
+                    }
+                    KrakenFutureOrderBook futureOrderBook = StreamingObjectMapperHelper.getObjectMapper().treeToValue(jsonMessage, KrakenFutureOrderBook.class);
+                    return ImmutablePair.of(futureOrderBook.getSeq(), KrakenFuturesUtils.convertFrom(futureOrderBook));
+                })
+                .filter(ob -> ob.getLeft() > lastOrderBookSeq)
+                .doOnNext(ob -> lastOrderBookSeq = ob.left)
+                .map(ob -> ob.right)
+                .map(ob -> {
+                    KrakenOrderBookStorage orderBook = ob.toKrakenOrderBook(orderBooks.get(channelName), 1000);
+                    orderBooks.put(channelName, orderBook);
+                    return KrakenAdapters.adaptOrderBook(orderBook.toKrakenDepth(), currencyPair);
+                });
+    }
+
+    @Override
+    public Observable<Ticker> getTicker(CurrencyPair currencyPair, Object... args) {
+        ImmutablePair<KrakenFuturesProduct, LocalDate> params = validateAndPrepareSubscriptionParams(currencyPair, args);
+        String channelName = getChannelName(KrakenFuturesFeed.ticker, currencyPair, params.left, params.right);
+        return service.subscribeChannel(channelName, args)
+                .map(jsonMessage -> StreamingObjectMapperHelper.getObjectMapper().treeToValue(jsonMessage, KrakenFutureTicker.class))
+                .map(ob -> {
+                    Ticker.Builder builder = new Ticker.Builder();
+                    builder.ask(ob.getAsk());
+                    builder.bid(ob.getBid());
+                    builder.askSize(ob.getAskSize());
+                    builder.bidSize(ob.getBidSize());
+                    builder.volume(ob.getVolume());
+                    builder.last(ob.getLast());
+                    builder.timestamp(new Date(ob.getTime()));
+                    builder.currencyPair(currencyPair);
+                    return builder.build();
+                });
+    }
+
+    @Override
+    public Observable<Trade> getTrades(CurrencyPair currencyPair, Object... args) {
+        ImmutablePair<KrakenFuturesProduct, LocalDate> params = validateAndPrepareSubscriptionParams(currencyPair, args);
+        String channelName = getChannelName(KrakenFuturesFeed.trade, currencyPair, params.left, params.right);
+        return service.subscribeChannel(channelName, args)
+                .filter(jsonMessage -> KrakenFuturesFeed.trade.equalsJsonNode(jsonMessage) || KrakenFuturesFeed.trade_snapshot.equalsJsonNode(jsonMessage))
+                .flatMap(jsonMessage -> {
+                    if (KrakenFuturesFeed.trade_snapshot.equalsJsonNode(jsonMessage)) {
+                        return Observable.fromIterable(StreamingObjectMapperHelper.getObjectMapper().treeToValue(jsonMessage, KrakenFutureTradeSnapshot.class)
+                                .getTrades()).sorted(Comparator.comparingLong(KrakenFutureTrade::getSeq));
+                    }
+                    return Observable.fromArray(StreamingObjectMapperHelper.getObjectMapper().treeToValue(jsonMessage, KrakenFutureTrade.class));
+                })
+                .filter(ob -> ob.getSeq() > lastTradeSeq)
+                .doOnNext(ob -> lastTradeSeq = ob.getSeq())
+                .map(ob -> {
+                    Trade.Builder builder = new Trade.Builder();
+                    builder.currencyPair(currencyPair);
+                    builder.price(ob.getPrice());
+                    builder.type(ob.getSide() == KrakenFuturesSide.sell ? Order.OrderType.ASK : Order.OrderType.BID);
+                    builder.originalAmount(ob.getQty());
+                    builder.timestamp(new Date(ob.getTime()));
+                    return builder.build();
+                });
+    }
+
+    private ImmutablePair<KrakenFuturesProduct, LocalDate> validateAndPrepareSubscriptionParams(CurrencyPair currencyPair, Object [] args) {
         validateCurrencyPair(currencyPair);
         KrakenFuturesProduct product = getIndexedValue("product", 0, KrakenFuturesProduct.class, null, true, args);
 
@@ -50,21 +127,7 @@ public class KrakenFuturesStreamingMarketDataService implements StreamingMarketD
         if (product.mustHaveMaturityDate) {
             maturityDate = getIndexedValue("maturityDate", 1, LocalDate.class, null, true, args);
         }
-
-        String channelName = getChannelName(KrakenFuturesFeed.book, currencyPair, product, maturityDate);
-        return service.subscribeChannel(channelName, args)
-                .filter(jsonMessage -> KrakenFuturesFeed.book.equalsJsonNode(jsonMessage) || KrakenFuturesFeed.book_snapshot.equalsJsonNode(jsonMessage))
-                .map(jsonMessage -> {
-                    if (KrakenFuturesFeed.book.equalsJsonNode(jsonMessage)) {
-                        return KrakenFuturesUtils.convertFrom(StreamingObjectMapperHelper.getObjectMapper().treeToValue(jsonMessage, KrakenFutureOrderBookUpdate.class));
-                    }
-                    return KrakenFuturesUtils.convertFrom(StreamingObjectMapperHelper.getObjectMapper().treeToValue(jsonMessage, KrakenFutureOrderBook.class));
-                })
-                .map(ob -> {
-                    KrakenOrderBookStorage orderBook = ob.toKrakenOrderBook(orderBooks.get(channelName), 1000);
-                    orderBooks.put(channelName, orderBook);
-                    return KrakenAdapters.adaptOrderBook(orderBook.toKrakenDepth(), currencyPair);
-                });
+        return ImmutablePair.of(product, maturityDate);
     }
 
     private void validateCurrencyPair(CurrencyPair currencyPair) {
@@ -91,18 +154,6 @@ public class KrakenFuturesStreamingMarketDataService implements StreamingMarketD
         if (failIfMissing) {
             throw new KrakenException(String.format("Parameter #%d (%s) is not specified", index, name));
         }
-        return null;
-    }
-
-    @Override
-    @SuppressWarnings("unchecked")
-    public Observable<Ticker> getTicker(CurrencyPair currencyPair, Object... args) {
-        return null;
-    }
-
-    @Override
-    @SuppressWarnings("unchecked")
-    public Observable<Trade> getTrades(CurrencyPair currencyPair, Object... args) {
         return null;
     }
 
