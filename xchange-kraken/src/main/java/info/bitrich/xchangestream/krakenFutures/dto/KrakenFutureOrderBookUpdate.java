@@ -1,7 +1,7 @@
-package info.bitrich.xchangestream.kraken.futures.dto;
+package info.bitrich.xchangestream.krakenFutures.dto;
 
-import info.bitrich.xchangestream.kraken.futures.enums.KrakenFuturesFeed;
-import info.bitrich.xchangestream.kraken.futures.enums.KrakenFuturesSide;
+import info.bitrich.xchangestream.krakenFutures.enums.KrakenFuturesFeed;
+import org.knowm.xchange.krakenFutures.dto.enums.KrakenFuturesSide;
 
 import java.beans.ConstructorProperties;
 import java.math.BigDecimal;

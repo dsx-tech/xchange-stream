@@ -1,14 +1,17 @@
-package info.bitrich.xchangestream.kraken.futures;
+package info.bitrich.xchangestream.krakenFutures;
 
 import info.bitrich.xchangestream.kraken.dto.KrakenOrderBook;
 import info.bitrich.xchangestream.kraken.dto.enums.KrakenOrderBookMessageType;
-import info.bitrich.xchangestream.kraken.futures.dto.KrakenFutureOrderBook;
-import info.bitrich.xchangestream.kraken.futures.dto.KrakenFutureOrderBookUpdate;
-import info.bitrich.xchangestream.kraken.futures.enums.KrakenFuturesSide;
+import info.bitrich.xchangestream.krakenFutures.dto.KrakenFutureOrderBook;
+import info.bitrich.xchangestream.krakenFutures.dto.KrakenFutureOrderBookUpdate;
 import org.knowm.xchange.kraken.dto.marketdata.KrakenPublicOrder;
+import org.knowm.xchange.krakenFutures.dto.enums.KrakenFuturesSide;
 
 import java.util.Arrays;
 
+/**
+ * @author pchertalev
+ */
 public class KrakenFuturesUtils {
 
     public static KrakenOrderBook convertFrom(KrakenFutureOrderBook futureOrderBook) {

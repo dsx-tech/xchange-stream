@@ -1,17 +1,15 @@
-package info.bitrich.xchangestream.kraken.futures;
+package info.bitrich.xchangestream.krakenFutures;
 
 import info.bitrich.xchangestream.core.StreamingMarketDataService;
 import info.bitrich.xchangestream.kraken.KrakenException;
 import info.bitrich.xchangestream.kraken.KrakenOrderBookStorage;
 import info.bitrich.xchangestream.kraken.dto.KrakenOrderBook;
-import info.bitrich.xchangestream.kraken.futures.dto.KrakenFutureOrderBook;
-import info.bitrich.xchangestream.kraken.futures.dto.KrakenFutureOrderBookUpdate;
-import info.bitrich.xchangestream.kraken.futures.dto.KrakenFutureTicker;
-import info.bitrich.xchangestream.kraken.futures.dto.KrakenFutureTrade;
-import info.bitrich.xchangestream.kraken.futures.dto.KrakenFutureTradeSnapshot;
-import info.bitrich.xchangestream.kraken.futures.enums.KrakenFuturesFeed;
-import info.bitrich.xchangestream.kraken.futures.enums.KrakenFuturesProduct;
-import info.bitrich.xchangestream.kraken.futures.enums.KrakenFuturesSide;
+import info.bitrich.xchangestream.krakenFutures.dto.KrakenFutureOrderBook;
+import info.bitrich.xchangestream.krakenFutures.dto.KrakenFutureOrderBookUpdate;
+import info.bitrich.xchangestream.krakenFutures.dto.KrakenFutureTicker;
+import info.bitrich.xchangestream.krakenFutures.dto.KrakenFutureTrade;
+import info.bitrich.xchangestream.krakenFutures.dto.KrakenFutureTradeSnapshot;
+import info.bitrich.xchangestream.krakenFutures.enums.KrakenFuturesFeed;
 import info.bitrich.xchangestream.service.netty.StreamingObjectMapperHelper;
 import io.reactivex.Observable;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -21,6 +19,8 @@ import org.knowm.xchange.dto.marketdata.OrderBook;
 import org.knowm.xchange.dto.marketdata.Ticker;
 import org.knowm.xchange.dto.marketdata.Trade;
 import org.knowm.xchange.kraken.KrakenAdapters;
+import org.knowm.xchange.krakenFutures.dto.enums.KrakenFuturesProduct;
+import org.knowm.xchange.krakenFutures.dto.enums.KrakenFuturesSide;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,7 +33,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import static info.bitrich.xchangestream.kraken.KrakenConstants.KRAKEN_CHANNEL_DELIMITER;
 
 /**
- * @author makarid, pchertalev
+ * @author pchertalev
  */
 public class KrakenFuturesStreamingMarketDataService implements StreamingMarketDataService {
 

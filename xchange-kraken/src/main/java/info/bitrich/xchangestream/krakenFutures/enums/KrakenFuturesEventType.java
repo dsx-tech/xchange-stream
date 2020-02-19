@@ -1,4 +1,4 @@
-package info.bitrich.xchangestream.kraken.futures.enums;
+package info.bitrich.xchangestream.krakenFutures.enums;
 
 import org.apache.commons.lang3.StringUtils;
 

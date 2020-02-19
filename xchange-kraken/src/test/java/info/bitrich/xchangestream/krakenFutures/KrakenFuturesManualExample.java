@@ -1,15 +1,15 @@
-package info.bitrich.xchangestream.kraken;
+package info.bitrich.xchangestream.krakenFutures;
 
 import info.bitrich.xchangestream.core.StreamingExchange;
 import info.bitrich.xchangestream.core.StreamingExchangeFactory;
-import info.bitrich.xchangestream.kraken.futures.KrakenFuturesStreamingExchange;
-import info.bitrich.xchangestream.kraken.futures.enums.KrakenFuturesProduct;
 import io.reactivex.disposables.Disposable;
 import org.knowm.xchange.ExchangeSpecification;
 import org.knowm.xchange.currency.CurrencyPair;
+import org.knowm.xchange.krakenFutures.dto.enums.KrakenFuturesProduct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.concurrent.TimeUnit;
 
@@ -17,9 +17,12 @@ public class KrakenFuturesManualExample {
 
     private static final Logger LOG = LoggerFactory.getLogger(KrakenFuturesManualExample.class);
 
-    public static void main(String[] args) throws InterruptedException {
+    public static void main(String[] args) throws InterruptedException, IOException {
 
         ExchangeSpecification exchangeSpecification = new ExchangeSpecification(KrakenFuturesStreamingExchange.class);
+        exchangeSpecification.setExchangeSpecificParametersItem(
+                KrakenFuturesStreamingExchange.PARAM_OVERRIDE_API_URL,
+                KrakenFuturesStreamingExchange.API_DEMO_URI);
 
         StreamingExchange krakenExchange = StreamingExchangeFactory.INSTANCE.createExchange(exchangeSpecification);
         krakenExchange.connect().blockingAwait();

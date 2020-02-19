@@ -1,35 +1,42 @@
-package info.bitrich.xchangestream.kraken.futures;
+package info.bitrich.xchangestream.krakenFutures;
 
 import info.bitrich.xchangestream.core.ProductSubscription;
 import info.bitrich.xchangestream.core.StreamingExchange;
 import info.bitrich.xchangestream.core.StreamingMarketDataService;
-import info.bitrich.xchangestream.kraken.KrakenStreamingMarketDataService;
 import io.reactivex.Completable;
 import org.knowm.xchange.ExchangeSpecification;
-import org.knowm.xchange.kraken.KrakenExchange;
+import org.knowm.xchange.krakenFutures.KrakenFuturesExchange;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import si.mazi.rescu.SynchronizedValueFactory;
 
 /**
- * @author makarid
+ * @author pchertalev
  */
-public class KrakenFuturesStreamingExchange extends KrakenExchange implements StreamingExchange {
+public class KrakenFuturesStreamingExchange extends KrakenFuturesExchange implements StreamingExchange {
 
     private static final Logger LOG = LoggerFactory.getLogger(KrakenFuturesStreamingExchange.class);
 
-    private static final String API_URI = "wss://futures.kraken.com/ws/v1";
+    public static final String API_URI = "wss://futures.kraken.com/ws/v1";
+    public static final String API_DEMO_URI = "wss://demo-futures.kraken.com/ws/v1";
 
-    private final KrakenFuturesStreamingService streamingService;
+    public static final String PARAM_OVERRIDE_API_URL = "OVERRIDE_API_URL";
+
+    private KrakenFuturesStreamingService streamingService;
     private KrakenFuturesStreamingMarketDataService streamingMarketDataService;
 
     public KrakenFuturesStreamingExchange() {
-        this.streamingService = new KrakenFuturesStreamingService(API_URI);
     }
 
     @Override
     protected void initServices() {
         super.initServices();
+        String overrideUrl = (String) getExchangeSpecification().getExchangeSpecificParametersItem(PARAM_OVERRIDE_API_URL);
+        if (overrideUrl != null) {
+            this.streamingService = new KrakenFuturesStreamingService(overrideUrl);
+        } else {
+            this.streamingService = new KrakenFuturesStreamingService(API_URI);
+        }
         streamingMarketDataService = new KrakenFuturesStreamingMarketDataService(streamingService);
     }
 

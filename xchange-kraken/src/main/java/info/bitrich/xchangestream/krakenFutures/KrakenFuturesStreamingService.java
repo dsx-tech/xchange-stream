@@ -1,12 +1,12 @@
-package info.bitrich.xchangestream.kraken.futures;
+package info.bitrich.xchangestream.krakenFutures;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import info.bitrich.xchangestream.kraken.futures.dto.KrakenFuturesErrorMessage;
-import info.bitrich.xchangestream.kraken.futures.dto.KrakenFuturesProductMessage;
-import info.bitrich.xchangestream.kraken.futures.enums.KrakenFuturesEventType;
-import info.bitrich.xchangestream.kraken.futures.enums.KrakenFuturesFeed;
+import info.bitrich.xchangestream.krakenFutures.dto.KrakenFuturesErrorMessage;
+import info.bitrich.xchangestream.krakenFutures.dto.KrakenFuturesProductMessage;
+import info.bitrich.xchangestream.krakenFutures.enums.KrakenFuturesEventType;
+import info.bitrich.xchangestream.krakenFutures.enums.KrakenFuturesFeed;
 import info.bitrich.xchangestream.service.netty.JsonNettyStreamingService;
 import info.bitrich.xchangestream.service.netty.StreamingObjectMapperHelper;
 import org.apache.commons.lang3.StringUtils;
@@ -20,10 +20,12 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import static info.bitrich.xchangestream.kraken.KrakenConstants.KRAKEN_CHANNEL_DELIMITER;
 import static info.bitrich.xchangestream.kraken.KrakenConstants.KRAKEN_FUTURES_PRODUCT_ID;
-import static info.bitrich.xchangestream.kraken.futures.enums.KrakenFuturesFeed.getFeed;
+import static info.bitrich.xchangestream.krakenFutures.enums.KrakenFuturesEventType.getEvent;
+import static info.bitrich.xchangestream.krakenFutures.enums.KrakenFuturesEventType.subscribe;
+import static info.bitrich.xchangestream.krakenFutures.enums.KrakenFuturesEventType.unsubscribe;
 
 /**
- * @author makarid, pchertalev
+ * @author pchertalev
  */
 public class KrakenFuturesStreamingService extends JsonNettyStreamingService {
     private static final Logger LOG = LoggerFactory.getLogger(KrakenFuturesStreamingService.class);
@@ -49,7 +51,7 @@ public class KrakenFuturesStreamingService extends JsonNettyStreamingService {
         try {
             JsonNode event = message.get(EVENT);
             KrakenFuturesEventType krakenEvent;
-            if (event != null && (krakenEvent = KrakenFuturesEventType.getEvent(event.textValue())) != null) {
+            if (event != null && (krakenEvent = getEvent(event.textValue())) != null) {
                 switch (krakenEvent) {
                     case error:
                         KrakenFuturesErrorMessage errorMessage = mapper.treeToValue(message, KrakenFuturesErrorMessage.class);
@@ -102,7 +104,7 @@ public class KrakenFuturesStreamingService extends JsonNettyStreamingService {
     @Override
     protected String getChannelNameFromMessage(JsonNode message) {
         StringBuilder channelNameBuilder = new StringBuilder();
-        KrakenFuturesFeed feed = getFeed(message);
+        KrakenFuturesFeed feed = KrakenFuturesFeed.getFeed(message);
         if (feed != null) {
             channelNameBuilder.append(feed.sourceFeed);
             if (message.has(KRAKEN_FUTURES_PRODUCT_ID)) {
@@ -123,12 +125,12 @@ public class KrakenFuturesStreamingService extends JsonNettyStreamingService {
 
     @Override
     public String getSubscribeMessage(String channelName, Object... args) throws IOException {
-        return getSubscriptionMessage(channelName, KrakenFuturesEventType.subscribe);
+        return getSubscriptionMessage(channelName, subscribe);
     }
 
     @Override
     public String getUnsubscribeMessage(String channelName) throws IOException {
-        return getSubscriptionMessage(channelName, KrakenFuturesEventType.unsubscribe);
+        return getSubscriptionMessage(channelName, unsubscribe);
     }
 
     private String getSubscriptionMessage(String channelName, KrakenFuturesEventType event) throws JsonProcessingException {

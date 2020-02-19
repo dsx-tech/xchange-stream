@@ -1,8 +1,8 @@
-package info.bitrich.xchangestream.kraken.futures.dto;
+package info.bitrich.xchangestream.krakenFutures.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import info.bitrich.xchangestream.kraken.futures.enums.KrakenFuturesEventType;
-import info.bitrich.xchangestream.kraken.futures.enums.KrakenFuturesFeed;
+import info.bitrich.xchangestream.krakenFutures.enums.KrakenFuturesEventType;
+import info.bitrich.xchangestream.krakenFutures.enums.KrakenFuturesFeed;
 
 import java.beans.ConstructorProperties;
 import java.util.List;

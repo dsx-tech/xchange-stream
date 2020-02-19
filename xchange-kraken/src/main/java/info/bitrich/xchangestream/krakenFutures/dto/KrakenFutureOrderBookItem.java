@@ -1,4 +1,4 @@
-package info.bitrich.xchangestream.kraken.futures.dto;
+package info.bitrich.xchangestream.krakenFutures.dto;
 
 import java.beans.ConstructorProperties;
 import java.math.BigDecimal;

@@ -16,7 +16,7 @@ import java.util.Map;
 /**
  * Kraken order book utils
  *
- * @author pavel chertalev
+ * @author pchertalev
  */
 public class KrakenOrderBookUtils {
 
