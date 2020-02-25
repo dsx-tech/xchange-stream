@@ -8,7 +8,6 @@ import org.knowm.xchange.ExchangeSpecification;
 import org.knowm.xchange.krakenFutures.KrakenFuturesExchange;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import si.mazi.rescu.SynchronizedValueFactory;
 
 /**
  * @author pchertalev
@@ -53,11 +52,6 @@ public class KrakenFuturesStreamingExchange extends KrakenFuturesExchange implem
     @Override
     public boolean isAlive() {
         return streamingService.isSocketOpen();
-    }
-
-    @Override
-    public SynchronizedValueFactory<Long> getNonceFactory() {
-        return null;
     }
 
     @Override
