@@ -1,4 +1,6 @@
-package info.bitrich.xchangestream.krakenFutures.dto;
+package info.bitrich.xchangestream.krakenFutures.dto.marketdata;
+
+import info.bitrich.xchangestream.krakenFutures.dto.KrakenFuturesMessage;
 
 import java.beans.ConstructorProperties;
 import java.math.BigDecimal;
@@ -6,7 +8,7 @@ import java.math.BigDecimal;
 /**
  * @author pchertalev
  */
-public class KrakenFutureOrderBookItem {
+public class KrakenFutureOrderBookItem extends KrakenFuturesMessage {
 
     private final BigDecimal price;
     private final BigDecimal qty;

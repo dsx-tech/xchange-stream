@@ -1,0 +1,21 @@
+{
+  "feed": "account_log",
+  "new_entry": {
+    "id": 173,
+    "date": "2020-03-01T19:15:16.286Z",
+    "asset": "ltc",
+    "info": "transfer",
+    "booking_uid": "b5460b4f-ee39-450d-9ffa-1988ed556649",
+    "margin_account": "ltc",
+    "old_balance": 19.0,
+    "new_balance": 18.0,
+    "old_average_entry_price": 0.0,
+    "new_average_entry_price": 0.0,
+    "trade_price": 0.0,
+    "mark_price": 0.0,
+    "realized_pnl": 0.0,
+    "fee": 0.0,
+    "execution": "",
+    "collateral": ""
+  }
+}

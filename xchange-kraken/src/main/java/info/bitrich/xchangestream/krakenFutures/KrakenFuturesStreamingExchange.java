@@ -1,8 +1,10 @@
 package info.bitrich.xchangestream.krakenFutures;
 
 import info.bitrich.xchangestream.core.ProductSubscription;
+import info.bitrich.xchangestream.core.StreamingAccountService;
 import info.bitrich.xchangestream.core.StreamingExchange;
 import info.bitrich.xchangestream.core.StreamingMarketDataService;
+import info.bitrich.xchangestream.core.StreamingTradeService;
 import io.reactivex.Completable;
 import org.knowm.xchange.ExchangeSpecification;
 import org.knowm.xchange.krakenFutures.KrakenFuturesExchange;
@@ -23,6 +25,8 @@ public class KrakenFuturesStreamingExchange extends KrakenFuturesExchange implem
 
     private KrakenFuturesStreamingService streamingService;
     private KrakenFuturesStreamingMarketDataService streamingMarketDataService;
+    private KrakenFuturesStreamingAccountService streamingAccountService;
+    private KrakenFuturesStreamingTradingService streamingTradingService;
 
     public KrakenFuturesStreamingExchange() {
     }
@@ -30,13 +34,16 @@ public class KrakenFuturesStreamingExchange extends KrakenFuturesExchange implem
     @Override
     protected void initServices() {
         super.initServices();
-        String overrideUrl = (String) getExchangeSpecification().getExchangeSpecificParametersItem(PARAM_OVERRIDE_API_URL);
+        ExchangeSpecification exchangeSpecification = getExchangeSpecification();
+        String overrideUrl = (String) exchangeSpecification.getExchangeSpecificParametersItem(PARAM_OVERRIDE_API_URL);
         if (overrideUrl != null) {
-            this.streamingService = new KrakenFuturesStreamingService(overrideUrl);
+            this.streamingService = new KrakenFuturesStreamingService(overrideUrl, exchangeSpecification.getApiKey(), exchangeSpecification.getSecretKey());
         } else {
-            this.streamingService = new KrakenFuturesStreamingService(API_URI);
+            this.streamingService = new KrakenFuturesStreamingService(API_URI, exchangeSpecification.getApiKey(), exchangeSpecification.getSecretKey());
         }
         streamingMarketDataService = new KrakenFuturesStreamingMarketDataService(streamingService);
+        streamingAccountService = new KrakenFuturesStreamingAccountService(streamingService);
+        streamingTradingService = new KrakenFuturesStreamingTradingService(streamingService);
     }
 
     @Override
@@ -64,6 +71,16 @@ public class KrakenFuturesStreamingExchange extends KrakenFuturesExchange implem
     @Override
     public StreamingMarketDataService getStreamingMarketDataService() {
         return streamingMarketDataService;
+    }
+
+    @Override
+    public StreamingAccountService getStreamingAccountService() {
+        return streamingAccountService;
+    }
+
+    @Override
+    public StreamingTradeService getStreamingTradeService() {
+        return streamingTradingService;
     }
 
     @Override

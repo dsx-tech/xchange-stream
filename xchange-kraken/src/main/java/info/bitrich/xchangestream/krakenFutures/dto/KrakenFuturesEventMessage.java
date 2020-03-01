@@ -8,12 +8,10 @@ import java.beans.ConstructorProperties;
 /**
  * @author pchertalev
  */
-public class KrakenFuturesEventMessage {
+public class KrakenFuturesEventMessage extends KrakenFuturesMessage {
 
     @JsonProperty(value = "event", required = true)
     private final KrakenFuturesEventType event;
-
-    private String message;
 
     @ConstructorProperties("event")
     public KrakenFuturesEventMessage(KrakenFuturesEventType event) {
@@ -24,7 +22,4 @@ public class KrakenFuturesEventMessage {
         return event;
     }
 
-    public String getMessage() {
-        return message;
-    }
 }

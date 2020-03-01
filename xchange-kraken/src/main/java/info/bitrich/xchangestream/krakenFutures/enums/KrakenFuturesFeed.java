@@ -13,17 +13,45 @@ public enum KrakenFuturesFeed {
     ticker,
     trade,
     trade_snapshot(trade),
+
+    account_balances_and_margins(true),
+
+    account_log(true),
+    account_log_snapshot(account_log),
+
+    deposits_withdrawals(true),
+
+    fills(true),
+    fills_snapshot(fills),
+
+    open_positions(true),
+    open_orders(true),
+
+    notifications_auth(true),
+
     heartbeat;
 
     public final KrakenFuturesFeed sourceFeed;
+    public final boolean auth;
 
 
     KrakenFuturesFeed() {
         this.sourceFeed = this;
+        this.auth = false;
+    }
+
+    KrakenFuturesFeed(boolean isAuth) {
+        this.sourceFeed = this;
+        this.auth = isAuth;
     }
 
     KrakenFuturesFeed(KrakenFuturesFeed sourceFeed) {
+        this(sourceFeed, false);
+    }
+
+    KrakenFuturesFeed(KrakenFuturesFeed sourceFeed, boolean isAuth) {
         this.sourceFeed = sourceFeed;
+        this.auth = isAuth;
     }
 
     public boolean equalsJsonNode(JsonNode jsonNode) {
