@@ -13,6 +13,8 @@ public enum KrakenFuturesEventType {
     unsubscribed(unsubscribe),
     unsubscribed_failed(unsubscribe),
 
+    info,
+    challenge,
     error;
 
     private final KrakenFuturesEventType sourceEvent;

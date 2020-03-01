@@ -1,5 +1,6 @@
-package info.bitrich.xchangestream.krakenFutures.dto;
+package info.bitrich.xchangestream.krakenFutures.dto.marketdata;
 
+import info.bitrich.xchangestream.krakenFutures.dto.KrakenFuturesProductUpdateMessage;
 import info.bitrich.xchangestream.krakenFutures.enums.KrakenFuturesFeed;
 
 import java.beans.ConstructorProperties;

@@ -5,6 +5,10 @@ package info.bitrich.xchangestream.kraken;
  */
 public class KrakenException extends RuntimeException {
 
+    public KrakenException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
     public KrakenException(String message) {
         super(message);
     }

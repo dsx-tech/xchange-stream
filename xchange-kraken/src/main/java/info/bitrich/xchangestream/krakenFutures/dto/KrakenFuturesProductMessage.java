@@ -15,14 +15,30 @@ public class KrakenFuturesProductMessage extends KrakenFuturesEventMessage {
     @JsonProperty
     private final KrakenFuturesFeed feed;
 
-    @JsonProperty(value = "product_ids", required = true)
+    @JsonProperty(value = "product_ids")
     private final List<String> productIds;
 
-    @ConstructorProperties({"event", "feed", "product_ids"})
+    @JsonProperty("api_key")
+    private String apiKey;
+
+    @JsonProperty("original_challenge")
+    private String originalChallenge;
+
+    @JsonProperty("signed_challenge")
+    private String signedChallenge;
+
     public KrakenFuturesProductMessage(KrakenFuturesEventType event, KrakenFuturesFeed feed, List<String> productIds) {
+        this(event, feed, productIds, null, null, null);
+    }
+
+    @ConstructorProperties({"event", "feed", "product_ids", "api_key", "original_challenge", "signed_challenge"})
+    public KrakenFuturesProductMessage(KrakenFuturesEventType event, KrakenFuturesFeed feed, List<String> productIds, String apiKey, String originalChallenge, String signedChallenge) {
         super(event);
         this.feed = feed;
         this.productIds = productIds;
+        this.apiKey = apiKey;
+        this.originalChallenge = originalChallenge;
+        this.signedChallenge = signedChallenge;
     }
 
     public KrakenFuturesFeed getFeed() {
@@ -31,5 +47,29 @@ public class KrakenFuturesProductMessage extends KrakenFuturesEventMessage {
 
     public List<String> getProductIds() {
         return productIds;
+    }
+
+    public String getApiKey() {
+        return apiKey;
+    }
+
+    public String getOriginalChallenge() {
+        return originalChallenge;
+    }
+
+    public String getSignedChallenge() {
+        return signedChallenge;
+    }
+
+    public void setApiKey(String apiKey) {
+        this.apiKey = apiKey;
+    }
+
+    public void setOriginalChallenge(String originalChallenge) {
+        this.originalChallenge = originalChallenge;
+    }
+
+    public void setSignedChallenge(String signedChallenge) {
+        this.signedChallenge = signedChallenge;
     }
 }
