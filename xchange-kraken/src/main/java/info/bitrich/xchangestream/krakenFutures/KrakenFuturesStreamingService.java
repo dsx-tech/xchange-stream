@@ -92,6 +92,7 @@ public class KrakenFuturesStreamingService extends JsonNettyStreamingService {
                             });
                             delayedMessages.clear();
                         }
+                        return;
                     case error:
                         KrakenFuturesErrorMessage errorMessage = mapper.treeToValue(message, KrakenFuturesErrorMessage.class);
                         LOG.error("Kraken Future error: {}", errorMessage.getMessage());
@@ -185,10 +186,9 @@ public class KrakenFuturesStreamingService extends JsonNettyStreamingService {
         }
         String channelName = channelNameBuilder.toString();
         if (StringUtils.isBlank(channelName)) {
-            LOG.debug("ChannelName not defined");
+            LOG.debug("Channel name is not recognized");
             return null;
         }
-        LOG.debug("ChannelName {}", channelName);
         return channelName;
     }
 
@@ -232,4 +232,9 @@ public class KrakenFuturesStreamingService extends JsonNettyStreamingService {
         return objectMapper.writeValueAsString(subscriptionMessage);
     }
 
+    @Override
+    public void resubscribeChannels() {
+        sign = null;
+        super.resubscribeChannels();
+    }
 }
