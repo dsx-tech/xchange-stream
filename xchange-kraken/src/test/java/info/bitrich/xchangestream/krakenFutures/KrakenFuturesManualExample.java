@@ -39,8 +39,8 @@ public class KrakenFuturesManualExample {
             LOG.error(e.getMessage(), e);
         });
 
-        Disposable bookPIDis = streamingMarketDataService.getOrderBook(CurrencyPair.XBT_USD, KrakenFuturesProduct.PI).subscribe(s -> {
-            LOG.info("Order book {}({},{}) ask[0] = {} bid[0] = {}", CurrencyPair.XBT_USD, s.getAsks().size(), s.getBids().size(), s.getAsks().get(0), s.getBids().get(0));
+        Disposable bookPIDis = streamingMarketDataService.getOrderBook(CurrencyPair.BTC_USD, KrakenFuturesProduct.PI).subscribe(s -> {
+            LOG.info("Order book {}({},{}) ask[0] = {} bid[0] = {}", CurrencyPair.BTC_USD, s.getAsks().size(), s.getBids().size(), s.getAsks().get(0), s.getBids().get(0));
         }, throwable -> {
             LOG.error("Order book FAILED {}", throwable.getMessage(), throwable);
         });
