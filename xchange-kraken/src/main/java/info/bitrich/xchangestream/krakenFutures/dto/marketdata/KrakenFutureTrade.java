@@ -14,7 +14,7 @@ import java.math.BigDecimal;
 public class KrakenFutureTrade extends KrakenFuturesProductUpdateMessage {
 
     /**
-     * 	The classification of the taker side in the matched trade: "buy" if the taker is a buyer, "sell" if the taker is a seller.
+     * The classification of the taker side in the matched trade: "buy" if the taker is a buyer, "sell" if the taker is a seller.
      */
     private final KrakenFuturesSide side;
 

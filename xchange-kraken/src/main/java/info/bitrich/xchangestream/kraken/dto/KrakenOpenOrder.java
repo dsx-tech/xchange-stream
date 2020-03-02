@@ -75,7 +75,7 @@ public class KrakenOpenOrder {
     public static class KrakenDtoDescr {
         public String pair;
         /**
-         * 	type of order (buy/sell)
+         * type of order (buy/sell)
          */
         public String type;
         /**

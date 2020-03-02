@@ -10,7 +10,7 @@ import java.math.BigDecimal;
 public class KrakenFuturesFill extends KrakenFuturesMessage {
 
     /**
-     * 	The fill instrument (referred also as symbol or product_id)
+     * The fill instrument (referred also as symbol or product_id)
      */
     private final String instrument;
 
@@ -25,7 +25,7 @@ public class KrakenFuturesFill extends KrakenFuturesMessage {
     private final Long seq;
 
     /**
-     * 	A flag that shows if filled order was a buy
+     * A flag that shows if filled order was a buy
      */
     private final Boolean buy;
 
@@ -35,7 +35,7 @@ public class KrakenFuturesFill extends KrakenFuturesMessage {
     private final BigDecimal qty;
 
     /**
-     * 	The order id that was filled
+     * The order id that was filled
      */
     @JsonProperty("order_id")
     private final String orderId;

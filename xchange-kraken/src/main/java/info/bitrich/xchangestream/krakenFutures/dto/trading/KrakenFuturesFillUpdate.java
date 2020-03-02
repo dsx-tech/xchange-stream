@@ -9,7 +9,7 @@ import java.util.List;
 public class KrakenFuturesFillUpdate extends KrakenFuturesFeedMessage {
 
     /**
-     * 	The user name
+     * The user name
      */
     private final String username;
 

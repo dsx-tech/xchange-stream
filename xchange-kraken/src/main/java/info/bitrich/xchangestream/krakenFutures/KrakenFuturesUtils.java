@@ -51,7 +51,7 @@ public class KrakenFuturesUtils {
         return new KrakenOrderBook(KrakenOrderBookMessageType.UPDATE, asks, bids);
     }
 
-    public static ImmutablePair<KrakenFuturesProduct, LocalDate> validateAndPrepareSubscriptionParams(CurrencyPair currencyPair, Object [] args) {
+    public static ImmutablePair<KrakenFuturesProduct, LocalDate> validateAndPrepareSubscriptionParams(CurrencyPair currencyPair, Object[] args) {
         validateCurrencyPair(currencyPair);
         KrakenFuturesProduct product = getIndexedValue("product", 0, KrakenFuturesProduct.class, null, true, args);
 

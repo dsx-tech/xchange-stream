@@ -39,13 +39,13 @@ public class KrakenStreamingExchange extends KrakenExchange implements Streaming
     @Override
     protected void initServices() {
         super.initServices();
-        Boolean useBeta = MoreObjects.firstNonNull((Boolean)exchangeSpecification.getExchangeSpecificParametersItem(USE_BETA), Boolean.FALSE);
+        Boolean useBeta = MoreObjects.firstNonNull((Boolean) exchangeSpecification.getExchangeSpecificParametersItem(USE_BETA), Boolean.FALSE);
 
-        this.streamingService = new KrakenStreamingService(false, pickUri(false,useBeta));
+        this.streamingService = new KrakenStreamingService(false, pickUri(false, useBeta));
         this.streamingMarketDataService = new KrakenStreamingMarketDataService(streamingService);
 
         if (StringUtils.isNotEmpty(exchangeSpecification.getApiKey())) {
-            this.privateStreamingService = new KrakenStreamingService(true, pickUri(true,useBeta));
+            this.privateStreamingService = new KrakenStreamingService(true, pickUri(true, useBeta));
         }
 
         KrakenAccountServiceRaw rawKrakenAcctService = (KrakenAccountServiceRaw) getAccountService();
@@ -71,17 +71,17 @@ public class KrakenStreamingExchange extends KrakenExchange implements Streaming
     public boolean isAlive() {
         return streamingService.isSocketOpen() && (privateStreamingService == null || privateStreamingService.isSocketOpen());
     }
-    
+
     @Override
     public Observable<Object> connectionSuccess() {
         return streamingService.subscribeConnectionSuccess();
     }
-    
+
     @Override
     public Observable<Throwable> reconnectFailure() {
         return streamingService.subscribeReconnectFailure();
     }
-    
+
     @Override
     public ExchangeSpecification getDefaultExchangeSpecification() {
         ExchangeSpecification spec = super.getDefaultExchangeSpecification();
@@ -98,6 +98,7 @@ public class KrakenStreamingExchange extends KrakenExchange implements Streaming
     public StreamingTradeService getStreamingTradeService() {
         return streamingTradeService;
     }
+
     @Override
     public void useCompressedMessages(boolean compressedMessages) {
         streamingService.useCompressedMessages(compressedMessages);

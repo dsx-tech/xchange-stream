@@ -23,8 +23,8 @@ public class KrakenFuturesManualExample {
                 KrakenFuturesStreamingExchange.PARAM_OVERRIDE_API_URL,
                 KrakenFuturesStreamingExchange.API_DEMO_URI);
 
-        exchangeSpecification.setApiKey("SEpLe3MiVCPWQqVIXObDzhCKQIh3IQcfiM/OeUr+9JS5hykZQw1jl6UF");
-        exchangeSpecification.setSecretKey("cosfOtLxeSHGrAFIo1zD3lCI1Qj4lfia0ezIlHzbT+nd2vNKP4JE2l6t00P/SN+nWnAwEtAbvDS+siPgHTZhXwfy");
+        exchangeSpecification.setApiKey("== api key ==");
+        exchangeSpecification.setSecretKey("== secret key ==");
 
         StreamingExchange krakenExchange = StreamingExchangeFactory.INSTANCE.createExchange(exchangeSpecification);
         krakenExchange.connect().blockingAwait();
@@ -32,6 +32,12 @@ public class KrakenFuturesManualExample {
         StreamingMarketDataService streamingMarketDataService = krakenExchange.getStreamingMarketDataService();
         KrakenFuturesStreamingAccountService accountService = (KrakenFuturesStreamingAccountService) krakenExchange.getStreamingAccountService();
         KrakenFuturesStreamingTradingService tradingService = (KrakenFuturesStreamingTradingService) krakenExchange.getStreamingTradeService();
+
+        Disposable openPositions = accountService.getOpenPositions().subscribe(positions -> {
+            LOG.info("Open positions: {}", positions);
+        }, e -> {
+            LOG.error(e.getMessage(), e);
+        });
 
         Disposable bookPIDis = streamingMarketDataService.getOrderBook(CurrencyPair.XBT_USD, KrakenFuturesProduct.PI).subscribe(s -> {
             LOG.info("Order book {}({},{}) ask[0] = {} bid[0] = {}", CurrencyPair.XBT_USD, s.getAsks().size(), s.getBids().size(), s.getAsks().get(0), s.getBids().get(0));
@@ -65,6 +71,7 @@ public class KrakenFuturesManualExample {
 
         TimeUnit.SECONDS.sleep(10);
 
+        openPositions.dispose();
         accountLogDis.dispose();
         accountBalanceDis.dispose();
         fillsDis.dispose();

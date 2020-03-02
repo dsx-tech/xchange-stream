@@ -72,7 +72,6 @@ public class KrakenFutureTicker extends KrakenFuturesProductUpdateMessage {
     private final BigDecimal change;
 
     /**
-     *
      * Currently can be 'week', 'month' or 'quarter'. Other tags may be added without notice.
      */
     private final String tag;

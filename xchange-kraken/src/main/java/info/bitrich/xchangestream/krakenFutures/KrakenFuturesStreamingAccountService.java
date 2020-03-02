@@ -7,6 +7,9 @@ import info.bitrich.xchangestream.krakenFutures.dto.account.KrakenFuturesAccount
 import info.bitrich.xchangestream.krakenFutures.dto.account.KrakenFuturesAccountLogSnapshot;
 import info.bitrich.xchangestream.krakenFutures.dto.account.KrakenFuturesAccountLogUpdate;
 import info.bitrich.xchangestream.krakenFutures.dto.account.KrakenFuturesMarginAccount;
+import info.bitrich.xchangestream.krakenFutures.dto.trading.KrakenFuturesFill;
+import info.bitrich.xchangestream.krakenFutures.dto.trading.KrakenFuturesOpenPosition;
+import info.bitrich.xchangestream.krakenFutures.dto.trading.KrakenFuturesOpenPositions;
 import info.bitrich.xchangestream.krakenFutures.enums.KrakenFuturesFeed;
 import info.bitrich.xchangestream.service.netty.StreamingObjectMapperHelper;
 import io.reactivex.Observable;
@@ -40,13 +43,18 @@ public class KrakenFuturesStreamingAccountService implements StreamingAccountSer
                 .doOnNext(log -> lastAccountLogId = log.getId());
     }
 
-
-    public Observable<KrakenFuturesMarginAccount> getAccountBalances() {
+    public Observable<KrakenFuturesAccountBalances> getAccountBalances() {
         return streamingService.subscribeChannel(KrakenFuturesFeed.account_balances_and_margins.name())
                 .filter(KrakenFuturesFeed.account_balances_and_margins::equalsJsonNode)
                 .map(jsonMessage -> mapper.treeToValue(jsonMessage, KrakenFuturesAccountBalances.class))
                 .filter(balance -> balance.getSeq() != null && balance.getSeq() > lastAccountBalanceSeq)
-                .doOnNext(balance -> lastAccountBalanceSeq = balance.getSeq())
-                .flatMap(balance -> Observable.fromIterable(balance.getMarginAccounts()));
+                .doOnNext(balance -> lastAccountBalanceSeq = balance.getSeq());
     }
+
+    public Observable<KrakenFuturesOpenPositions> getOpenPositions() {
+        return streamingService.subscribeChannel(KrakenFuturesFeed.open_positions.name())
+                .filter(KrakenFuturesFeed.open_positions::equalsJsonNode)
+                .map(jsonMessage -> mapper.treeToValue(jsonMessage, KrakenFuturesOpenPositions.class));
+    }
+
 }

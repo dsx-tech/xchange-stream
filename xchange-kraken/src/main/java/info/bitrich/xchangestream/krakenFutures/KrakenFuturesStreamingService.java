@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import info.bitrich.xchangestream.kraken.KrakenException;
 import info.bitrich.xchangestream.krakenFutures.dto.KrakenFuturesChallengeRequest;
 import info.bitrich.xchangestream.krakenFutures.dto.KrakenFuturesErrorMessage;
-import info.bitrich.xchangestream.krakenFutures.dto.KrakenFuturesProductMessage;
+import info.bitrich.xchangestream.krakenFutures.dto.KrakenFuturesSubscriptionMessage;
 import info.bitrich.xchangestream.krakenFutures.enums.KrakenFuturesEventType;
 import info.bitrich.xchangestream.krakenFutures.enums.KrakenFuturesFeed;
 import info.bitrich.xchangestream.service.netty.JsonNettyStreamingService;
@@ -45,7 +45,7 @@ public class KrakenFuturesStreamingService extends JsonNettyStreamingService {
     private ObjectMapper mapper = StreamingObjectMapperHelper.getObjectMapper();
 
     private final Set<String> subscriptionRequests = ConcurrentHashMap.newKeySet();
-    private final Set<KrakenFuturesProductMessage> delayedMessages = ConcurrentHashMap.newKeySet();
+    private final Set<KrakenFuturesSubscriptionMessage> delayedMessages = ConcurrentHashMap.newKeySet();
 
     private final String apiKey;
     private final String apiSecret;
@@ -98,7 +98,7 @@ public class KrakenFuturesStreamingService extends JsonNettyStreamingService {
                         return;
                     case subscribed:
                     case unsubscribed:
-                        KrakenFuturesProductMessage statusMessage = mapper.treeToValue(message, KrakenFuturesProductMessage.class);
+                        KrakenFuturesSubscriptionMessage statusMessage = mapper.treeToValue(message, KrakenFuturesSubscriptionMessage.class);
                         if (statusMessage.getProductIds() == null) {
                             processSubscriptionActionConfirmation(krakenEvent, statusMessage, null);
                         } else {
@@ -109,7 +109,7 @@ public class KrakenFuturesStreamingService extends JsonNettyStreamingService {
                         return;
                     case subscribed_failed:
                     case unsubscribed_failed:
-                        KrakenFuturesProductMessage failedMessage = mapper.treeToValue(message, KrakenFuturesProductMessage.class);
+                        KrakenFuturesSubscriptionMessage failedMessage = mapper.treeToValue(message, KrakenFuturesSubscriptionMessage.class);
                         failedMessage.getProductIds().forEach(productId -> {
                             String channelName = failedMessage.getFeed() + KRAKEN_CHANNEL_DELIMITER + productId;
                             if (subscriptionRequests.contains(channelName)) {
@@ -138,7 +138,7 @@ public class KrakenFuturesStreamingService extends JsonNettyStreamingService {
         super.handleMessage(message);
     }
 
-    private void processSubscriptionActionConfirmation(KrakenFuturesEventType krakenEvent, KrakenFuturesProductMessage statusMessage, String productId) {
+    private void processSubscriptionActionConfirmation(KrakenFuturesEventType krakenEvent, KrakenFuturesSubscriptionMessage statusMessage, String productId) {
         String channelName = statusMessage.getFeed() + (productId == null ? "" : KRAKEN_CHANNEL_DELIMITER + productId);
         if (subscriptionRequests.contains(channelName)) {
             LOG.info("{} request has been successfully confirmed for productId {}", krakenEvent.getSourceEvent(), productId);
@@ -199,7 +199,7 @@ public class KrakenFuturesStreamingService extends JsonNettyStreamingService {
         if (feed.auth) {
             if (isAuthenticated()) {
                 if (sign == null) {
-                    delayedMessages.add(new KrakenFuturesProductMessage(subscribe, feed, null));
+                    delayedMessages.add(new KrakenFuturesSubscriptionMessage(subscribe, feed, null));
                     return null;
                 }
                 return getSubscriptionMessage(channelName, subscribe, true);
@@ -223,11 +223,11 @@ public class KrakenFuturesStreamingService extends JsonNettyStreamingService {
         subscriptionRequests.add(channelName);
         List<String> productIds = productId == null ? null : Collections.singletonList(productId);
 
-        KrakenFuturesProductMessage subscriptionMessage;
+        KrakenFuturesSubscriptionMessage subscriptionMessage;
         if (auth) {
-            subscriptionMessage = new KrakenFuturesProductMessage(event, feed, productIds, apiKey, sign.getLeft(), sign.getRight());
+            subscriptionMessage = new KrakenFuturesSubscriptionMessage(event, feed, productIds, apiKey, sign.getLeft(), sign.getRight());
         } else {
-            subscriptionMessage = new KrakenFuturesProductMessage(event, feed, productIds);
+            subscriptionMessage = new KrakenFuturesSubscriptionMessage(event, feed, productIds);
         }
         return objectMapper.writeValueAsString(subscriptionMessage);
     }

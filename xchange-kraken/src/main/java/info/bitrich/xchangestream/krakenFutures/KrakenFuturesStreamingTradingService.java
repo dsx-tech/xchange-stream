@@ -5,6 +5,8 @@ import info.bitrich.xchangestream.core.StreamingTradeService;
 import info.bitrich.xchangestream.krakenFutures.dto.trading.KrakenFuturesFill;
 import info.bitrich.xchangestream.krakenFutures.dto.trading.KrakenFuturesFillSnapshot;
 import info.bitrich.xchangestream.krakenFutures.dto.trading.KrakenFuturesFillUpdate;
+import info.bitrich.xchangestream.krakenFutures.dto.trading.KrakenFuturesOpenPosition;
+import info.bitrich.xchangestream.krakenFutures.dto.trading.KrakenFuturesOpenPositions;
 import info.bitrich.xchangestream.krakenFutures.dto.trading.KrakenFuturesOrder;
 import info.bitrich.xchangestream.krakenFutures.dto.trading.KrakenFuturesOrdersSnapshot;
 import info.bitrich.xchangestream.krakenFutures.dto.trading.KrakenFuturesOrdersUpdate;
