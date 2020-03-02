@@ -25,7 +25,9 @@ public enum KrakenFuturesFeed {
     fills_snapshot(fills),
 
     open_positions(true),
+
     open_orders(true),
+    open_orders_snapshot(open_orders),
 
     notifications_auth(true),
 

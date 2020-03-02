@@ -23,8 +23,8 @@ public class KrakenFuturesManualExample {
                 KrakenFuturesStreamingExchange.PARAM_OVERRIDE_API_URL,
                 KrakenFuturesStreamingExchange.API_DEMO_URI);
 
-        exchangeSpecification.setApiKey("== apikey ==");
-        exchangeSpecification.setSecretKey("== secretKey ==");
+        exchangeSpecification.setApiKey("SEpLe3MiVCPWQqVIXObDzhCKQIh3IQcfiM/OeUr+9JS5hykZQw1jl6UF");
+        exchangeSpecification.setSecretKey("cosfOtLxeSHGrAFIo1zD3lCI1Qj4lfia0ezIlHzbT+nd2vNKP4JE2l6t00P/SN+nWnAwEtAbvDS+siPgHTZhXwfy");
 
         StreamingExchange krakenExchange = StreamingExchangeFactory.INSTANCE.createExchange(exchangeSpecification);
         krakenExchange.connect().blockingAwait();
@@ -57,12 +57,19 @@ public class KrakenFuturesManualExample {
             LOG.error(e.getMessage(), e);
         });
 
+        Disposable openOrdersDis = tradingService.getOpenOrders().subscribe(order -> {
+            LOG.info("openOrder: {}", order);
+        }, e -> {
+            LOG.error(e.getMessage(), e);
+        });
+
         TimeUnit.SECONDS.sleep(10);
 
         accountLogDis.dispose();
         accountBalanceDis.dispose();
         fillsDis.dispose();
         bookPIDis.dispose();
+        openOrdersDis.dispose();
 
         TimeUnit.SECONDS.sleep(2);
 

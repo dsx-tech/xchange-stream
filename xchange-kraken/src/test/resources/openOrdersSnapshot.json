@@ -1,0 +1,19 @@
+{
+  "feed": "open_orders_snapshot",
+  "account": "cd3229c7-5bf3-4afc-a331-13e42143fb00",
+  "orders": [
+    {
+      "instrument": "PI_XRPUSD",
+      "time": 1583110349429,
+      "last_update_time": 1583110349429,
+      "qty": 1.0,
+      "filled": 0.0,
+      "limit_price": 0.2289,
+      "stop_price": 0.0,
+      "type": "limit",
+      "order_id": "c537bf8e-6528-4470-bfe3-c4a59b4c300f",
+      "direction": 0,
+      "reduce_only": false
+    }
+  ]
+}
