@@ -10,7 +10,7 @@ import java.util.List;
 /**
  * @author pchertalev
  */
-public class KrakenFuturesProductMessage extends KrakenFuturesEventMessage {
+public class KrakenFuturesSubscriptionMessage extends KrakenFuturesEventMessage {
 
     @JsonProperty
     private final KrakenFuturesFeed feed;
@@ -27,12 +27,12 @@ public class KrakenFuturesProductMessage extends KrakenFuturesEventMessage {
     @JsonProperty("signed_challenge")
     private String signedChallenge;
 
-    public KrakenFuturesProductMessage(KrakenFuturesEventType event, KrakenFuturesFeed feed, List<String> productIds) {
+    public KrakenFuturesSubscriptionMessage(KrakenFuturesEventType event, KrakenFuturesFeed feed, List<String> productIds) {
         this(event, feed, productIds, null, null, null);
     }
 
     @ConstructorProperties({"event", "feed", "product_ids", "api_key", "original_challenge", "signed_challenge"})
-    public KrakenFuturesProductMessage(KrakenFuturesEventType event, KrakenFuturesFeed feed, List<String> productIds, String apiKey, String originalChallenge, String signedChallenge) {
+    public KrakenFuturesSubscriptionMessage(KrakenFuturesEventType event, KrakenFuturesFeed feed, List<String> productIds, String apiKey, String originalChallenge, String signedChallenge) {
         super(event);
         this.feed = feed;
         this.productIds = productIds;

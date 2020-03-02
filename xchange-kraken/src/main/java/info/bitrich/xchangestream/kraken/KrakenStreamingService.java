@@ -140,7 +140,7 @@ public class KrakenStreamingService extends JsonNettyStreamingService {
     @Override
     public String getSubscribeMessage(String channelName, Object... args) throws IOException {
         int reqID = Math.abs(UUID.randomUUID().hashCode());
-        String [] channelData = channelName.split(KRAKEN_CHANNEL_DELIMITER);
+        String[] channelData = channelName.split(KRAKEN_CHANNEL_DELIMITER);
         KrakenSubscriptionName subscriptionName = KrakenSubscriptionName.valueOf(channelData[0]);
 
         if (isPrivate) {
@@ -168,7 +168,7 @@ public class KrakenStreamingService extends JsonNettyStreamingService {
     @Override
     public String getUnsubscribeMessage(String channelName) throws IOException {
         int reqID = Math.abs(UUID.randomUUID().hashCode());
-        String [] channelData = channelName.split(KRAKEN_CHANNEL_DELIMITER);
+        String[] channelData = channelName.split(KRAKEN_CHANNEL_DELIMITER);
         KrakenSubscriptionName subscriptionName = KrakenSubscriptionName.valueOf(channelData[0]);
 
         if (isPrivate) {
@@ -184,6 +184,7 @@ public class KrakenStreamingService extends JsonNettyStreamingService {
             return objectMapper.writeValueAsString(subscriptionMessage);
         }
     }
+
     @Override
     protected WebSocketClientHandler getWebSocketClientHandler(WebSocketClientHandshaker handshaker,
                                                                WebSocketClientHandler.WebSocketMessageHandler handler) {
@@ -194,13 +195,13 @@ public class KrakenStreamingService extends JsonNettyStreamingService {
     @Override
     protected Completable openConnection() {
 
-        KrakenSubscriptionMessage ping = new KrakenSubscriptionMessage(null,KrakenEventType.ping,null,null);
+        KrakenSubscriptionMessage ping = new KrakenSubscriptionMessage(null, KrakenEventType.ping, null, null);
 
-        subscribeConnectionSuccess().subscribe( o ->
-            Observable
-                    .interval(30, TimeUnit.SECONDS)
-                    .takeWhile( t -> isSocketOpen())
-                    .subscribe( t -> sendObjectMessage(ping)));
+        subscribeConnectionSuccess().subscribe(o ->
+                Observable
+                        .interval(30, TimeUnit.SECONDS)
+                        .takeWhile(t -> isSocketOpen())
+                        .subscribe(t -> sendObjectMessage(ping)));
 
         return super.openConnection();
     }

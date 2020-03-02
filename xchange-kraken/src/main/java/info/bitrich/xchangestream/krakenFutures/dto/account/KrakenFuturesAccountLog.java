@@ -42,7 +42,7 @@ public class KrakenFuturesAccountLog extends KrakenFuturesMessage {
     private final String marginAccount;
 
     /**
-     * 	The account balance before the described in info action
+     * The account balance before the described in info action
      */
     @JsonProperty("old_balance")
     private final BigDecimal oldBalance;
@@ -99,14 +99,12 @@ public class KrakenFuturesAccountLog extends KrakenFuturesMessage {
     private final String collateral;
 
     /**
-     *
      * The absolute funding rate
      */
     @JsonProperty("funding_rate")
     private final BigDecimal fundingRate;
 
     /**
-     *
      * The funding rate realized due to change in position size or end of funding rate period
      */
     @JsonProperty("realized_funding")

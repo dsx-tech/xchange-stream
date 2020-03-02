@@ -10,7 +10,7 @@ import java.math.BigDecimal;
 public class KrakenFuturesOrder extends KrakenFuturesMessage {
 
     /**
-     * 	The instrument (referred also as symbol or product_id) of the order
+     * The instrument (referred also as symbol or product_id) of the order
      */
     private final String instrument;
 
@@ -42,14 +42,14 @@ public class KrakenFuturesOrder extends KrakenFuturesMessage {
     private final BigDecimal limitPrice;
 
     /**
-     * 	The stop price of the order
+     * The stop price of the order
      */
     @JsonProperty("stop_price")
     private final BigDecimal stopPrice;
 
 
     /**
-     * 	The order type, limit or stop
+     * The order type, limit or stop
      */
     private final KrakenFuturesOpenOrderType type;
 

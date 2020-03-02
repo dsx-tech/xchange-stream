@@ -41,12 +41,16 @@ public class KrakenStreamingTradeService implements StreamingTradeService {
         this.streamingService = streamingService;
         this.rawKrakenAcctService = rawKrakenAcctService;
     }
+
     private String getChannelName(KrakenSubscriptionName subscriptionName) {
         return subscriptionName.toString();
     }
 
-    private static class KrakenDtoOrderHolder extends HashMap<String, KrakenOpenOrder> {}
-    private static class KrakenDtoUserTradeHolder extends HashMap<String, KrakenOwnTrade> {}
+    private static class KrakenDtoOrderHolder extends HashMap<String, KrakenOpenOrder> {
+    }
+
+    private static class KrakenDtoUserTradeHolder extends HashMap<String, KrakenOwnTrade> {
+    }
 
     private KrakenWebsocketToken renewToken() throws IOException {
         if (System.currentTimeMillis() >= tokenExpires) {
@@ -76,9 +80,9 @@ public class KrakenStreamingTradeService implements StreamingTradeService {
                     }
                 }
             }
-            return Observable.create( emit -> ownTradesObservable
-                        .filter(order -> currencyPair == null || order.getCurrencyPair() == null || order.getCurrencyPair().compareTo(currencyPair) == 0)
-                        .subscribe(emit::onNext, emit::onError, emit::onComplete));
+            return Observable.create(emit -> ownTradesObservable
+                    .filter(order -> currencyPair == null || order.getCurrencyPair() == null || order.getCurrencyPair().compareTo(currencyPair) == 0)
+                    .subscribe(emit::onNext, emit::onError, emit::onComplete));
 
         } catch (IOException e) {
             return Observable.error(e);
@@ -88,7 +92,7 @@ public class KrakenStreamingTradeService implements StreamingTradeService {
     private Iterable<Order> adaptKrakenOrders(KrakenDtoOrderHolder[] dtoList) {
         List<Order> result = new ArrayList<>();
 
-        for(KrakenDtoOrderHolder dtoHolder : dtoList) {
+        for (KrakenDtoOrderHolder dtoHolder : dtoList) {
             for (Map.Entry<String, KrakenOpenOrder> dtoOrderEntry : dtoHolder.entrySet()) {
                 String orderId = dtoOrderEntry.getKey();
                 KrakenOpenOrder dto = dtoOrderEntry.getValue();
@@ -100,12 +104,12 @@ public class KrakenStreamingTradeService implements StreamingTradeService {
 
                 Order.Builder builder;
                 if ("limit".equals(orderType))
-                    builder = new LimitOrder.Builder(side,pair)
-                                    .limitPrice(descr.price);
+                    builder = new LimitOrder.Builder(side, pair)
+                            .limitPrice(descr.price);
                 else if ("stop".equals(orderType))
-                    builder = new StopOrder.Builder(side,pair)
-                                    .limitPrice(descr.price)
-                                    .stopPrice(descr.price2);
+                    builder = new StopOrder.Builder(side, pair)
+                            .limitPrice(descr.price)
+                            .stopPrice(descr.price2);
 
                 else if ("market".equals(orderType))
                     builder = new MarketOrder.Builder(side, pair);
@@ -113,16 +117,16 @@ public class KrakenStreamingTradeService implements StreamingTradeService {
                     builder = new MarketOrder.Builder(side, pair);
 
                 result.add(
-                    builder
-                        .id(orderId)
-                        .originalAmount(dto.vol)
-                        .cumulativeAmount(dto.vol_exec)
-                        .orderStatus(dto.status == null ? null : KrakenAdapters.adaptOrderStatus(KrakenOrderStatus.fromString(dto.status)))
-                        .timestamp(dto.opentm == null ? null : new Date((long) (dto.opentm * 1000L)))
-                        .fee(dto.fee)
-                        .flags(adaptFlags(dto.oflags))
-                        .userReference(dto.refid)
-                        .build()
+                        builder
+                                .id(orderId)
+                                .originalAmount(dto.vol)
+                                .cumulativeAmount(dto.vol_exec)
+                                .orderStatus(dto.status == null ? null : KrakenAdapters.adaptOrderStatus(KrakenOrderStatus.fromString(dto.status)))
+                                .timestamp(dto.opentm == null ? null : new Date((long) (dto.opentm * 1000L)))
+                                .fee(dto.fee)
+                                .flags(adaptFlags(dto.oflags))
+                                .userReference(dto.refid)
+                                .build()
                 );
             }
         }
@@ -167,7 +171,7 @@ public class KrakenStreamingTradeService implements StreamingTradeService {
                     }
                 }
             }
-            return Observable.create( emit -> userTradeObservable
+            return Observable.create(emit -> userTradeObservable
                     .filter(order -> currencyPair == null || order.getCurrencyPair() == null || order.getCurrencyPair().compareTo(currencyPair) == 0)
                     .subscribe(emit::onNext, emit::onError, emit::onComplete));
 
@@ -175,20 +179,21 @@ public class KrakenStreamingTradeService implements StreamingTradeService {
             return Observable.error(e);
         }
     }
+
     private List<UserTrade> adaptKrakenUserTrade(KrakenDtoUserTradeHolder[] ownTrades) {
         List<UserTrade> result = new ArrayList<>();
 
-        for(KrakenDtoUserTradeHolder holder : ownTrades) {
+        for (KrakenDtoUserTradeHolder holder : ownTrades) {
             for (Map.Entry<String, KrakenOwnTrade> entry : holder.entrySet()) {
                 String tradeId = entry.getKey();
                 KrakenOwnTrade dto = entry.getValue();
 
                 CurrencyPair currencyPair = new CurrencyPair(dto.pair);
-                result.add( new UserTrade.Builder()
+                result.add(new UserTrade.Builder()
                         .id(dto.postxid)
                         .orderId(dto.ordertxid)
                         .currencyPair(currencyPair)
-                        .timestamp(dto.time == null ? null : new Date((long)(dto.time*1000L)))
+                        .timestamp(dto.time == null ? null : new Date((long) (dto.time * 1000L)))
                         .type(KrakenAdapters.adaptOrderType(KrakenType.fromString(dto.type)))
                         .price(dto.price)
                         .feeAmount(dto.fee)

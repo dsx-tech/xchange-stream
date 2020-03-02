@@ -24,8 +24,9 @@ public class KrakenOrderBookStorage {
 
     /**
      * Constructor is used for snapshots only
+     *
      * @param orderBookUpdate order book update items
-     * @param maxDepth order book size can rise up, so depth value need for order book truncating
+     * @param maxDepth        order book size can rise up, so depth value need for order book truncating
      */
     public KrakenOrderBookStorage(KrakenOrderBook orderBookUpdate, int maxDepth) {
         this.maxDepth = maxDepth;
@@ -34,6 +35,7 @@ public class KrakenOrderBookStorage {
 
     /**
      * Create order book from snapshot
+     *
      * @param orderBookUpdate order book snapshot
      */
     private void createFromLevels(KrakenOrderBook orderBookUpdate) {
@@ -51,6 +53,7 @@ public class KrakenOrderBookStorage {
 
     /**
      * Converting to Kraken XChange format
+     *
      * @return
      */
     public synchronized KrakenDepth toKrakenDepth() {
@@ -61,6 +64,7 @@ public class KrakenOrderBookStorage {
 
     /**
      * Order book incremental update
+     *
      * @param orderBookUpdate order book update
      */
     public synchronized void updateOrderBook(KrakenOrderBook orderBookUpdate) {
