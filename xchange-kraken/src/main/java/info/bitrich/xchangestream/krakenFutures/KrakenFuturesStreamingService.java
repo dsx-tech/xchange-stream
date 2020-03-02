@@ -87,6 +87,7 @@ public class KrakenFuturesStreamingService extends JsonNettyStreamingService {
                                 msg.setApiKey(apiKey);
                                 msg.setSignedChallenge(sign.getRight());
                                 msg.setOriginalChallenge(sign.getLeft());
+                                subscriptionRequests.add(msg.getFeed().name());
                                 sendObjectMessage(msg);
                             });
                             delayedMessages.clear();
