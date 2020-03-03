@@ -35,6 +35,11 @@ public class KrakenFuturesFill extends KrakenFuturesMessage {
     private final BigDecimal qty;
 
     /**
+     * Fill price
+     */
+    private final BigDecimal price;
+
+    /**
      * The order id that was filled
      */
     @JsonProperty("order_id")
@@ -64,13 +69,14 @@ public class KrakenFuturesFill extends KrakenFuturesMessage {
     @JsonProperty("fill_type")
     private final KrakenFuturesFillType fillType;
 
-    @ConstructorProperties({"instrument", "time", "seq", "buy", "qty", "order_id", "cli_ord_id", "fill_id", "fill_type"})
-    public KrakenFuturesFill(String instrument, Long time, Long seq, Boolean buy, BigDecimal qty, String orderId, String cliOrdId, String fillId, KrakenFuturesFillType fillType) {
+    @ConstructorProperties({"instrument", "time", "seq", "buy", "qty", "price", "order_id", "cli_ord_id", "fill_id", "fill_type"})
+    public KrakenFuturesFill(String instrument, Long time, Long seq, Boolean buy, BigDecimal qty, BigDecimal price, String orderId, String cliOrdId, String fillId, KrakenFuturesFillType fillType) {
         this.instrument = instrument;
         this.time = time;
         this.seq = seq;
         this.buy = buy;
         this.qty = qty;
+        this.price = price;
         this.orderId = orderId;
         this.cliOrdId = cliOrdId;
         this.fillId = fillId;
@@ -95,6 +101,10 @@ public class KrakenFuturesFill extends KrakenFuturesMessage {
 
     public BigDecimal getQty() {
         return qty;
+    }
+
+    public BigDecimal getPrice() {
+        return price;
     }
 
     public String getOrderId() {
