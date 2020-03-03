@@ -45,8 +45,6 @@ public class KrakenFuturesStreamingMarketDataService implements StreamingMarketD
 
     private final KrakenFuturesStreamingService service;
     private final Map<String, KrakenOrderBookStorage> orderBooks = new ConcurrentHashMap<>();
-    private volatile long lastTradeSeq = 0;
-    private volatile long lastOrderBookSeq = 0;
 
     public KrakenFuturesStreamingMarketDataService(KrakenFuturesStreamingService service) {
         this.service = service;
@@ -68,8 +66,6 @@ public class KrakenFuturesStreamingMarketDataService implements StreamingMarketD
                     KrakenFutureOrderBook futureOrderBook = MAPPER.treeToValue(jsonMessage, KrakenFutureOrderBook.class);
                     return ImmutablePair.of(futureOrderBook.getSeq(), KrakenFuturesUtils.convertFrom(futureOrderBook));
                 })
-                .filter(ob -> ob.getLeft() > lastOrderBookSeq)
-                .doOnNext(ob -> lastOrderBookSeq = ob.left)
                 .map(ob -> ob.right)
                 .map(ob -> {
                     KrakenOrderBookStorage orderBook = ob.toKrakenOrderBook(orderBooks.get(channelName), 1000);
@@ -113,8 +109,6 @@ public class KrakenFuturesStreamingMarketDataService implements StreamingMarketD
                     }
                     return Observable.fromArray(MAPPER.treeToValue(jsonMessage, KrakenFutureTrade.class));
                 })
-                .filter(ob -> ob.getSeq() > lastTradeSeq)
-                .doOnNext(ob -> lastTradeSeq = ob.getSeq())
                 .map(ob -> {
                     Trade.Builder builder = new Trade.Builder();
                     builder.currencyPair(adaptedCurrencyPair);
