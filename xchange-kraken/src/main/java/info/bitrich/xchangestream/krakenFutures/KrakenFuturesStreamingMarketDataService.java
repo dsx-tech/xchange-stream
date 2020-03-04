@@ -32,7 +32,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import static info.bitrich.xchangestream.krakenFutures.KrakenFuturesUtils.getChannelName;
 import static info.bitrich.xchangestream.krakenFutures.KrakenFuturesUtils.validateAndPrepareSubscriptionParams;
-import static org.knowm.xchange.krakenFutures.KrakenFuturesAdapters.adaptCurrencyPair;
 
 /**
  * @author pchertalev
@@ -52,9 +51,8 @@ public class KrakenFuturesStreamingMarketDataService implements StreamingMarketD
 
     @Override
     public Observable<OrderBook> getOrderBook(CurrencyPair currencyPair, Object... args) {
-        CurrencyPair adaptedCurrencyPair = adaptCurrencyPair(currencyPair);
-        ImmutablePair<KrakenFuturesProduct, LocalDate> params = validateAndPrepareSubscriptionParams(adaptedCurrencyPair, args);
-        String channelName = getChannelName(KrakenFuturesFeed.book, adaptedCurrencyPair, params.left, params.right);
+        ImmutablePair<KrakenFuturesProduct, LocalDate> params = validateAndPrepareSubscriptionParams(currencyPair, args);
+        String channelName = getChannelName(KrakenFuturesFeed.book, currencyPair, params.left, params.right);
         return service.subscribeChannel(channelName, args)
                 .filter(jsonMessage -> KrakenFuturesFeed.book.equalsJsonNode(jsonMessage) || KrakenFuturesFeed.book_snapshot.equalsJsonNode(jsonMessage))
                 .map(jsonMessage -> {
@@ -70,15 +68,14 @@ public class KrakenFuturesStreamingMarketDataService implements StreamingMarketD
                 .map(ob -> {
                     KrakenOrderBookStorage orderBook = ob.toKrakenOrderBook(orderBooks.get(channelName), 1000);
                     orderBooks.put(channelName, orderBook);
-                    return KrakenAdapters.adaptOrderBook(orderBook.toKrakenDepth(), adaptedCurrencyPair);
+                    return KrakenAdapters.adaptOrderBook(orderBook.toKrakenDepth(), currencyPair);
                 });
     }
 
     @Override
     public Observable<Ticker> getTicker(CurrencyPair currencyPair, Object... args) {
-        CurrencyPair adaptedCurrencyPair = adaptCurrencyPair(currencyPair);
-        ImmutablePair<KrakenFuturesProduct, LocalDate> params = validateAndPrepareSubscriptionParams(adaptedCurrencyPair, args);
-        String channelName = getChannelName(KrakenFuturesFeed.ticker, adaptedCurrencyPair, params.left, params.right);
+        ImmutablePair<KrakenFuturesProduct, LocalDate> params = validateAndPrepareSubscriptionParams(currencyPair, args);
+        String channelName = getChannelName(KrakenFuturesFeed.ticker, currencyPair, params.left, params.right);
         return service.subscribeChannel(channelName, args)
                 .map(jsonMessage -> MAPPER.treeToValue(jsonMessage, KrakenFutureTicker.class))
                 .map(ob -> {
@@ -90,16 +87,15 @@ public class KrakenFuturesStreamingMarketDataService implements StreamingMarketD
                     builder.volume(ob.getVolume());
                     builder.last(ob.getLast());
                     builder.timestamp(new Date(ob.getTime()));
-                    builder.currencyPair(adaptedCurrencyPair);
+                    builder.currencyPair(currencyPair);
                     return builder.build();
                 });
     }
 
     @Override
     public Observable<Trade> getTrades(CurrencyPair currencyPair, Object... args) {
-        CurrencyPair adaptedCurrencyPair = adaptCurrencyPair(currencyPair);
-        ImmutablePair<KrakenFuturesProduct, LocalDate> params = validateAndPrepareSubscriptionParams(adaptedCurrencyPair, args);
-        String channelName = getChannelName(KrakenFuturesFeed.trade, adaptedCurrencyPair, params.left, params.right);
+        ImmutablePair<KrakenFuturesProduct, LocalDate> params = validateAndPrepareSubscriptionParams(currencyPair, args);
+        String channelName = getChannelName(KrakenFuturesFeed.trade, currencyPair, params.left, params.right);
         return service.subscribeChannel(channelName, args)
                 .filter(jsonMessage -> KrakenFuturesFeed.trade.equalsJsonNode(jsonMessage) || KrakenFuturesFeed.trade_snapshot.equalsJsonNode(jsonMessage))
                 .flatMap(jsonMessage -> {
@@ -111,7 +107,7 @@ public class KrakenFuturesStreamingMarketDataService implements StreamingMarketD
                 })
                 .map(ob -> {
                     Trade.Builder builder = new Trade.Builder();
-                    builder.currencyPair(adaptedCurrencyPair);
+                    builder.currencyPair(currencyPair);
                     builder.price(ob.getPrice());
                     builder.type(ob.getSide() == KrakenFuturesSide.sell ? Order.OrderType.ASK : Order.OrderType.BID);
                     builder.originalAmount(ob.getQty());
