@@ -2,16 +2,20 @@ package info.bitrich.xchangestream.bequant;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import info.bitrich.xchangestream.bequant.dto.*;
+import info.bitrich.xchangestream.bequant.dto.BequantWebSocketOrderBook;
+import info.bitrich.xchangestream.bequant.dto.BequantWebSocketOrderBookTransaction;
+import info.bitrich.xchangestream.bequant.dto.BequantWebSocketTickerTransaction;
+import info.bitrich.xchangestream.bequant.dto.BequantWebSocketTradeParams;
+import info.bitrich.xchangestream.bequant.dto.BequantWebSocketTradesTransaction;
 import info.bitrich.xchangestream.core.StreamingMarketDataService;
 import info.bitrich.xchangestream.service.netty.StreamingObjectMapperHelper;
 import io.reactivex.Observable;
+import org.knowm.xchange.bequant.v2.BequantAdapters;
 import org.knowm.xchange.currency.CurrencyPair;
 import org.knowm.xchange.dto.marketdata.OrderBook;
 import org.knowm.xchange.dto.marketdata.Ticker;
 import org.knowm.xchange.dto.marketdata.Trade;
 import org.knowm.xchange.dto.marketdata.Trades;
-import org.knowm.xchange.hitbtc.v2.HitbtcAdapters;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -42,7 +46,7 @@ public class BequantStreamingMarketDataService implements StreamingMarketDataSer
                 .map(s -> {
                     BequantWebSocketOrderBook bequantOrderBook = s.toBequantOrderBook(orderbooks.getOrDefault(currencyPair, null));
                     orderbooks.put(currencyPair, bequantOrderBook);
-                    return HitbtcAdapters.adaptOrderBook(bequantOrderBook.toHitbtcOrderBook(), currencyPair);
+                    return BequantAdapters.adaptOrderBook(bequantOrderBook.toBequantOrderBook(), currencyPair);
                 });
     }
 
@@ -60,7 +64,7 @@ public class BequantStreamingMarketDataService implements StreamingMarketDataSer
                 .filter(Objects::nonNull)
                 .map(Arrays::asList)
                 .flatMapIterable(s -> {
-                    Trades adaptedTrades = HitbtcAdapters.adaptTrades(s, currencyPair);
+                    Trades adaptedTrades = BequantAdapters.adaptTrades(s, currencyPair);
                     return adaptedTrades.getTrades();
                 });
     }
@@ -73,7 +77,7 @@ public class BequantStreamingMarketDataService implements StreamingMarketDataSer
 
         return service.subscribeChannel(channelName)
                 .map(s -> mapper.readValue(s.toString(), BequantWebSocketTickerTransaction.class))
-                .map(s -> HitbtcAdapters.adaptTicker(s.getParams(), currencyPair));
+                .map(s -> BequantAdapters.adaptTicker(s.getParams(), currencyPair));
     }
 
     private String getChannelName(String entityName, String pair) {

@@ -22,7 +22,7 @@
         </dependency>
         <dependency>
             <groupId>org.knowm.xchange</groupId>
-            <artifactId>xchange-hitbtc</artifactId>
+            <artifactId>xchange-bequant</artifactId>
             <version>${xchange.version}</version>
         </dependency>
         <dependency>

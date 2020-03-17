@@ -1,7 +1,7 @@
 package info.bitrich.xchangestream.bequant.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.knowm.xchange.hitbtc.v2.dto.HitbtcTicker;
+import org.knowm.xchange.bequant.v2.dto.BequantTicker;
 
 /**
  * Created by Pavel Chertalev on 15.03.2018.
@@ -9,10 +9,10 @@ import org.knowm.xchange.hitbtc.v2.dto.HitbtcTicker;
 public class BequantWebSocketTickerTransaction extends BequantWebSocketBaseTransaction {
 
     private final Integer id;
-    private final HitbtcTicker params;
+    private final BequantTicker params;
 
     public BequantWebSocketTickerTransaction(@JsonProperty("method") String method, @JsonProperty("id") Integer id,
-                                             @JsonProperty("params") HitbtcTicker params) {
+                                             @JsonProperty("params") BequantTicker params) {
         super(method);
         this.id = id;
         this.params = params;
@@ -22,7 +22,7 @@ public class BequantWebSocketTickerTransaction extends BequantWebSocketBaseTrans
         return id;
     }
 
-    public HitbtcTicker getParams() {
+    public BequantTicker getParams() {
         return params;
     }
 }

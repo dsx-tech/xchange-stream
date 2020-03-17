@@ -6,12 +6,12 @@ import info.bitrich.xchangestream.core.StreamingMarketDataService;
 import io.reactivex.Completable;
 import io.reactivex.Observable;
 import org.knowm.xchange.ExchangeSpecification;
-import org.knowm.xchange.hitbtc.v2.HitbtcExchange;
+import org.knowm.xchange.bequant.v2.BequantExchange;
 
 /**
  * Created by Pavel Chertalev on 15.03.2018.
  */
-public class BequantStreamingExchange extends HitbtcExchange implements StreamingExchange {
+public class BequantStreamingExchange extends BequantExchange implements StreamingExchange {
     private static final String API_URI = "wss://api.bequant.io/api/2/ws";
 
     private final BequantStreamingService streamingService;

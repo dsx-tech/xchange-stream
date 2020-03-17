@@ -9,7 +9,7 @@ import io.netty.handler.codec.http.websocketx.extensions.WebSocketClientExtensio
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
-import org.knowm.xchange.hitbtc.v2.dto.HitbtcException;
+import org.knowm.xchange.bequant.v2.dto.BequantException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -87,7 +87,7 @@ public class BequantStreamingService extends JsonNettyStreamingService {
 
                 if (message.has(JSON_ERROR)) {
                     try {
-                        HitbtcException exception = objectMapper.treeToValue(message, HitbtcException.class);
+                        BequantException exception = objectMapper.treeToValue(message, BequantException.class);
                         super.handleError(message, exception);
                     } catch (JsonProcessingException e) {
                         super.handleError(message, e);
