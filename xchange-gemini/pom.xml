@@ -3,7 +3,7 @@
     <parent>
         <artifactId>xchange-stream-parent</artifactId>
         <groupId>info.bitrich.xchange-stream</groupId>
-        <version>4.4.0.1.1-dsx</version>
+        <version>4.4.0.2-dsx-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
