@@ -233,7 +233,7 @@ public abstract class NettyStreamingService<T> extends ConnectableService {
 
     private void scheduleReconnect() {
         LOG.info("Scheduling reconnection");
-        webSocketChannel.eventLoop().schedule(
+        eventLoopGroup.schedule(
                 () -> connect().subscribe(),
                 retryDuration.toMillis(),
                 TimeUnit.MILLISECONDS);
