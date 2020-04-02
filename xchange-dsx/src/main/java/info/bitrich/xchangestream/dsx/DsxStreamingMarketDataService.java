@@ -7,6 +7,7 @@ import info.bitrich.xchangestream.dsx.dto.*;
 import info.bitrich.xchangestream.service.netty.StreamingObjectMapperHelper;
 import io.reactivex.Observable;
 import org.knowm.xchange.currency.CurrencyPair;
+import org.knowm.xchange.dsx.dto.DsxTradesSortBy;
 import org.knowm.xchange.dto.marketdata.OrderBook;
 import org.knowm.xchange.dto.marketdata.Ticker;
 import org.knowm.xchange.dto.marketdata.Trade;
@@ -60,7 +61,7 @@ public class DsxStreamingMarketDataService implements StreamingMarketDataService
                 .filter(Objects::nonNull)
                 .map(Arrays::asList)
                 .flatMapIterable(s -> {
-                    Trades adaptedTrades = DsxAdapters.adaptTrades(s, currencyPair);
+                    Trades adaptedTrades = DsxAdapters.adaptTrades(s, currencyPair, DsxTradesSortBy.timestamp);
                     return adaptedTrades.getTrades();
                 });
     }
