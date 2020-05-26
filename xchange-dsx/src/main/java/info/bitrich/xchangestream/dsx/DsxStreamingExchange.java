@@ -12,7 +12,7 @@ import org.knowm.xchange.dsx.v2.DsxExchange;
  * Created by Pavel Chertalev on 15.03.2018.
  */
 public class DsxStreamingExchange extends DsxExchange implements StreamingExchange {
-    private static final String API_URI = "wss://api.dsxglobal.com/api/2/ws";
+    private static final String API_URI = "wss://api.old.dsxglobal.com/api/2/ws";
 
     private final DsxStreamingService streamingService;
     private DsxStreamingMarketDataService streamingMarketDataService;
